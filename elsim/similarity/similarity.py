@@ -58,7 +58,7 @@ class SIMILARITY :
         self._u.ncd.restype = c_int
         self._u.ncs.restype = c_int
         self._u.cmid.restype = c_int
-        self._u.entropy.restype = c_float
+        self._u.entropy.restype = c_double
         self._u.levenshtein.restype = c_uint
         
         self._u.kolmogorov.restype = c_uint

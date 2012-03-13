@@ -226,10 +226,25 @@ def benchmark(func, ref, threshold, fcmp) :
 
     return tres/idx, nb, idx, t2 - t1
 
+import math
+def entropy(data):
+    entropy = 0
+
+    if len(data) == 0 :
+        return entropy
+
+    for x in range(256):
+        p_x = float(data.count(chr(x)))/len(data)
+        if p_x > 0:
+            entropy += - p_x*math.log(p_x, 2)
+    return entropy
+
 def TestEntropy(n, tests, diff) :
     nb = 0
     t1 = time.clock()
     for i in tests :
+        print n.entropy(i[0])[0], entropy(i[0])
+        print n.entropy(i[1])[0], entropy(i[1])
         nb += test( n.entropy(i[0])[0], n.entropy(i[1])[0], lambda x, y : (max(x,y) - min(x,y)) <= diff )
     t2 = time.clock()
     print "* Entropy %fs %d/%d" % (t2 - t1, nb, len(tests))

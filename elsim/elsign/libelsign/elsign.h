@@ -179,8 +179,8 @@ class Elsign {
         vector<MSignature *> signatures;
         sparse_hash_map<int, MSignature *> reverse_signatures;
 
-        sparse_hash_map<Signature *, float> entropies_hashmap_sign_ncd;
-        sparse_hash_map<Signature *, float> entropies_hashmap_elem;
+        sparse_hash_map<Signature *, double> entropies_hashmap_sign_ncd;
+        sparse_hash_map<Signature *, double> entropies_hashmap_elem;
 
         sparse_hash_map<string, float> ncd_hashmap;
         sparse_hash_map<string, int> compress_hashmap;

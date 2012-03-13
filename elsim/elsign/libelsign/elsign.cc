@@ -185,7 +185,7 @@ Signature *Elsign::create_sub_signature(const char *input, unsigned int input_si
     s1->type = 0;
     s1->value = string(input, input_size);
     
-    float elem_entropy = entropy( (void *)input, input_size );
+    double elem_entropy = entropy( (void *)input, input_size );
     
     ets->insert( ets->begin(), elem_entropy );
     s1->ets = ets; 
@@ -228,7 +228,7 @@ int Elsign::add_element(const char *input, unsigned int input_size, vector<doubl
         }
     }
 
-    float elem_entropy = entropy( (void *)input, input_size );
+    double elem_entropy = entropy( (void *)input, input_size );
 
     Signature *s1 = new Signature();
     s1->id = this->db.elem; 
@@ -355,7 +355,7 @@ int Elsign::clustering(ClusterInfo *ci) {
     }
 
     i = 0;
-    for (sparse_hash_map<Signature *, float>::const_iterator it = entropies_hashmap_sign_ncd.begin(); it != entropies_hashmap_sign_ncd.end(); ++it) {
+    for (sparse_hash_map<Signature *, double>::const_iterator it = entropies_hashmap_sign_ncd.begin(); it != entropies_hashmap_sign_ncd.end(); ++it) {
         for(unsigned int ii = 0; ii < it->first->ets->size(); ii++) {
             data[ i ][ ii ] = (double)(*it->first->ets)[ ii ];
             mask[ i ][ ii ] = 1;
@@ -370,7 +370,7 @@ int Elsign::clustering(ClusterInfo *ci) {
         cout << "ADD ELEMENTS\n";
     }
 
-    for (sparse_hash_map<Signature *, float>::const_iterator it = entropies_hashmap_elem.begin(); it != entropies_hashmap_elem.end(); ++it) {
+    for (sparse_hash_map<Signature *, double>::const_iterator it = entropies_hashmap_elem.begin(); it != entropies_hashmap_elem.end(); ++it) {
         for(unsigned int ii = 0; ii < it->first->ets->size(); ii++) {
             data[ i ][ ii ] = (double)(*it->first->ets)[ ii ];
             mask[ i ][ ii ] = 1;
@@ -546,7 +546,7 @@ int Elsign::raz() {
     this->db.raz();
 
     /* RAZ elements */
-    for (sparse_hash_map<Signature *, float>::const_iterator it = entropies_hashmap_elem.begin(); it != entropies_hashmap_elem.end(); ++it) {                                    
+    for (sparse_hash_map<Signature *, double>::const_iterator it = entropies_hashmap_elem.begin(); it != entropies_hashmap_elem.end(); ++it) {                                    
         it->first->ets->clear();
         delete it->first->ets;
 
@@ -555,7 +555,7 @@ int Elsign::raz() {
     }
     entropies_hashmap_elem.clear();
 
-    for (sparse_hash_map<Signature *, float>::const_iterator it = entropies_hashmap_sign_ncd.begin(); it != entropies_hashmap_sign_ncd.end(); ++it) {
+    for (sparse_hash_map<Signature *, double>::const_iterator it = entropies_hashmap_sign_ncd.begin(); it != entropies_hashmap_sign_ncd.end(); ++it) {
         it->first->used = 1;
     }
 

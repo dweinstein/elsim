@@ -283,9 +283,9 @@ int cmid(int level, libsimilarity_t *n)
     return 0;
 }
 
-float entropy(void *orig, size_t size_orig)
+double entropy(void *orig, size_t size_orig)
 {
-    float e;
+    double e;
     char a;
     int i;
     int byte_counters[256];
@@ -302,7 +302,7 @@ float entropy(void *orig, size_t size_orig)
     for (i=0; i < 256; i++) {
         double p_i  = (double)byte_counters[i] / (double)size_orig;
         if (p_i > 0.0) {
-            e -= p_i * (log(p_i) / log(2));
+            e += - p_i*log2( p_i );
         }
     }
 
