@@ -527,7 +527,7 @@ class CSignature :
 
     def list_indb(self, output) :
         from elsim.similarity import similarity
-        s = similarity.SIMILARITY( "./elsim/similarity/libsimilarity/libsimilarity.so" )
+        s = similarity.SIMILARITY( "./elsim/elsim/similarity/libsimilarity/libsimilarity.so" )
         s.set_compress_type( similarity.ZLIB_COMPRESS )
 
         fd = open(output, "r")
@@ -563,7 +563,7 @@ class CSignature :
 
 
         from elsim.similarity import similarity
-        s = similarity.SIMILARITY( "./elsim/similarity/libsimilarity/libsimilarity.so" )
+        s = similarity.SIMILARITY( "./elsim/elsim/similarity/libsimilarity/libsimilarity.so" )
         s.set_compress_type( similarity.SNAPPY_COMPRESS )
 
         self.__check_db( s, ids, meth_sim )

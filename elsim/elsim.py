@@ -137,7 +137,7 @@ class Elsim :
         if T != None :
             self.F[ FILTER_SORT_VALUE ] = T
 
-        self.sim = SIMILARITY( "elsim/similarity/libsimilarity/libsimilarity.so" )
+        self.sim = SIMILARITY( "elsim/elsim/similarity/libsimilarity/libsimilarity.so" )
 
         self.sim.set_compress_type( self.compressor )
         if C != None :
