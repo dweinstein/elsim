@@ -123,7 +123,7 @@ class DalvikElsign :
 
     def load_meths(self, vm, vmx) :
         if self.debug :
-            print "M",
+            print "LM",
             sys.stdout.flush()
 
         # Add methods for METHSIM
@@ -135,7 +135,7 @@ class DalvikElsign :
    
     def load_classes(self, vm, vmx) :
         if self.debug :
-            print "C",
+            print "LC",
             sys.stdout.flush()
         
         # Add classes for CLASSSIM
@@ -173,7 +173,7 @@ class DalvikElsign :
         self.load_meths(vm, vmx)
         
         if self.debug :
-            print "SM",
+            print "CM",
             sys.stdout.flush()
         ret = self.meth_elsign.check() 
         
@@ -194,7 +194,7 @@ class DalvikElsign :
             self.load_classes(vm, vmx)
             
             if self.debug :
-                print "CM",
+                print "CC",
                 sys.stdout.flush()
             ret = self.class_elsign.check()
         
@@ -215,11 +215,11 @@ class DalvikElsign :
 class DalvikMElsign(DalvikElsign) :
     def check(self, vm, vmx) :
         self.load_meths(vm, vmx)
-        ret = self.meth_elsign.check_all()
         
         if self.debug :
-            print "SM",
+            print "CM",
             sys.stdout.flush()
+        ret = self.meth_elsign.check_all()
         
         if self.debug :
             dt = self.meth_elsign.get_debug()
