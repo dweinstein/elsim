@@ -49,27 +49,27 @@ from similarity.similarity import *
 from sklearn.neighbors import NearestNeighbors
 import numpy as np
 
-FILTER_ELEMENT_METH     =           "FILTER_ELEMENT_METH"
-FILTER_CHECKSUM_METH    =           "FILTER_CHECKSUM_METH"      # function to checksum an element
-FILTER_SIM_METH         =           "FILTER_SIM_METH"           # function to calculate the similarity between two methods
-FILTER_SORT_METH        =           "FILTER_SORT_METH"          # function to sort all diffing methods
-FILTER_SORT_VALUE       =           "FILTER_SORT_VALUE"         # value which used in the sort method to eliminate not interesting comparisons
-FILTER_SKIPPED_METH     =           "FILTER_SKIPPED_METH"          # function to skip methods
-FILTER_SIM_VALUE_METH   =           "FILTER_SIM_VALUE_METH"     # function to modify values of the similarity
+FILTER_ELEMENT_METH         =       "FILTER_ELEMENT_METH"
+FILTER_CHECKSUM_METH        =       "FILTER_CHECKSUM_METH"      # function to checksum an element
+FILTER_SIM_METH             =       "FILTER_SIM_METH"           # function to calculate the similarity between two elements
+FILTER_SORT_METH            =       "FILTER_SORT_METH"          # function to sort all similar elements 
+FILTER_SORT_VALUE           =       "FILTER_SORT_VALUE"         # value which used in the sort method to eliminate not interesting comparisons 
+FILTER_SKIPPED_METH         =       "FILTER_SKIPPED_METH"       # object to skip elements
+FILTER_SIM_VALUE_METH       =       "FILTER_SIM_VALUE_METH"     # function to modify values of the similarity
 
-BASE                    =       "base"
-ELEMENTS                =       "elements"
-HASHSUM                 =       "hashsum"
-SIMILAR_ELEMENTS        =       "similar_elements"
-HASHSUM_SIMILAR_ELEMENTS        =       "hash_similar_elements"
-NEW_ELEMENTS            =       "newmethods"
-HASHSUM_NEW_ELEMENTS            =       "hash_newmethods"
-DELETED_ELEMENTS        =       "deletemethods"
-IDENTICAL_ELEMENTS      =       "matchmethods"
-INTERNAL_IDENTICAL_ELEMENTS      =       "internal identical elements"
-SKIPPED_ELEMENTS         =       "skipelements"
-SIMILARITY_ELEMENTS     =       "similarity_elements"
-SIMILARITY_SORT_ELEMENTS     =       "similarity_sort_elements"
+BASE                        =       "base"
+ELEMENTS                    =       "elements"
+HASHSUM                     =       "hashsum"
+SIMILAR_ELEMENTS            =       "similar_elements"
+HASHSUM_SIMILAR_ELEMENTS    =       "hash_similar_elements"
+NEW_ELEMENTS                =       "newelements"
+HASHSUM_NEW_ELEMENTS        =       "hash_new_elements"
+DELETED_ELEMENTS            =       "deletedelements"
+IDENTICAL_ELEMENTS          =       "identicalelements"
+INTERNAL_IDENTICAL_ELEMENTS =       "internal identical elements"
+SKIPPED_ELEMENTS            =       "skippedelements"
+SIMILARITY_ELEMENTS         =       "similarity_elements"
+SIMILARITY_SORT_ELEMENTS    =       "similarity_sort_elements"
 
 
 class ElsimNeighbors :
@@ -113,7 +113,6 @@ class ElsimNeighbors :
 
         return l
 
-
 def split_elements(el, els) :
     e1 = {}
     for i in els :
@@ -126,7 +125,7 @@ def split_elements(el, els) :
 # set elements : hash
 # hash table elements : hash --> element
 class Elsim :
-    def __init__(self, e1, e2, F, T=None, C=None) :
+    def __init__(self, e1, e2, F, T=None, C=None, libpath="elsim/elsim/similarity/libsimilarity/libsimilarity.so") :
         self.e1 = e1
         self.e2 = e2
         self.F = F
@@ -137,7 +136,7 @@ class Elsim :
         if T != None :
             self.F[ FILTER_SORT_VALUE ] = T
 
-        self.sim = SIMILARITY( "elsim/elsim/similarity/libsimilarity/libsimilarity.so" )
+        self.sim = SIMILARITY( libpath )
 
         self.sim.set_compress_type( self.compressor )
         if C != None :
@@ -156,10 +155,10 @@ class Elsim :
         self.filters = {}
 
         self._init_filters()
-        self._init_index_methods()
+        self._init_index_elements()
         self._init_similarity()
-        self._init_sort_methods()
-        self._init_new_methods()
+        self._init_sort_elements()
+        self._init_new_elements()
 
     def _init_filters(self) :
         self.filters = {}
@@ -188,18 +187,18 @@ class Elsim :
         self.set_els = {}
         self.ref_set_els = {}
 
-    def _init_index_methods(self) :
-        self.__init_index_methods( self.e1, 1 )
-        self.__init_index_methods( self.e2 )
+    def _init_index_elements(self) :
+        self.__init_index_elements( self.e1, 1 )
+        self.__init_index_elements( self.e2 )
     
-    def __init_index_methods(self, ce, init=0) :
+    def __init_index_elements(self, ce, init=0) :
         self.set_els[ ce ] = set()
         self.ref_set_els[ ce ] = {}
         
         for ae in ce.get_elements() :
             e = self.filters[BASE][FILTER_ELEMENT_METH]( ae, ce )
        
-            if self.filters[BASE][FILTER_SKIPPED_METH]( e ) :
+            if self.filters[BASE][FILTER_SKIPPED_METH].skip( e ) :
                 self.filters[ SKIPPED_ELEMENTS ].append( e )
                 continue
           
@@ -221,12 +220,11 @@ class Elsim :
         self.filters[IDENTICAL_ELEMENTS].update([ self.ref_set_els[ self.e1 ][ i ] for i in intersection_elements ])
         available_e2_elements = [ self.ref_set_els[ self.e2 ][ i ] for i in difference_elements ]
 
-        # Check if some methods in the first file has been modified
+        # Check if some elements in the first file has been modified
         for j in self.filters[ELEMENTS][self.e1] :
             self.filters[ SIMILARITY_ELEMENTS ][ j ] = {}
 
             #debug("SIM FOR %s" % (j.get_info()))
-            # B1 not at 0.0 in BB2
             if j.getsha256() not in self.filters[HASHSUM][self.e2] :
                 
                 #eln = ElsimNeighbors( j, available_e2_elements )
@@ -238,8 +236,7 @@ class Elsim :
                         self.filters[SIMILAR_ELEMENTS].append(j)
                         self.filters[HASHSUM_SIMILAR_ELEMENTS].append( j.getsha256() )
 
-    def _init_sort_methods(self) :
-#       print "DEBUG DIFF METHODS"
+    def _init_sort_elements(self) :
         deleted_elements = []
         for j in self.filters[SIMILAR_ELEMENTS] :
             #debug("SORT FOR %s" % (j.get_info()))
@@ -261,16 +258,16 @@ class Elsim :
     def __checksort(self, x, y) :
         return y in self.filters[SIMILARITY_SORT_ELEMENTS][ x ]
 
-    def _init_new_methods(self) :
-        # Check if some methods in the second file are totally new !
+    def _init_new_elements(self) :
+        # Check if some elements in the second file are totally new !
         for j in self.filters[ELEMENTS][self.e2] :
 
-            # new methods can't be in diff methods
+            # new elements can't be in similar elements
             if j not in self.filters[SIMILAR_ELEMENTS] :
-                # new methods hashs can't be in first file
+                # new elements hashes can't be in first file
                 if j.getsha256() not in self.filters[HASHSUM][self.e1] :
                     ok = True
-                    # new methods can't be compared to another one
+                    # new elements can't be compared to another one
                     for diff_element in self.filters[SIMILAR_ELEMENTS] :
                         if self.__checksort( diff_element, j ) :
                             ok = False

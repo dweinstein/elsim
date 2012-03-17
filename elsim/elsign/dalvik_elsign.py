@@ -86,6 +86,8 @@ class DalvikElsign :
         self.meth_elsign.set_threshold_high( methsim["THRESHOLD_HIGH"] )
         # SNAPPY
         self.meth_elsign.set_ncd_compression_algorithm( 5 )
+
+
     ################ CLASS ################
         classsim = buff["METHSIM"]
         
@@ -102,12 +104,12 @@ class DalvikElsign :
         self.class_elsign.set_ncd_compression_algorithm( 5 )
       
     def add_signature(self, type_signature, x, y, z) :
-        # FIX ENTROPIES
+        # FIX ENTROPIES (old version)
         for j in z :
             if len(j[0]) == 5 :
                 j[0].pop(0)
        
-        # FIX FORMULA
+        # FIX FORMULA (old version)
         y = FIX_FORMULA(y, len(z))
 
         if type_signature == METHSIM :
@@ -325,10 +327,8 @@ class PublicSignature :
 class PublicMSignature(PublicSignature) :
     def __init__(self, database, config, debug=False) :
         self.debug = debug
-
         self.DE = DalvikMElsign()
         self.DE.set_debug( debug )
-        self.DE.load_config()
 
         self.database = database
         self.config = config
@@ -440,6 +440,7 @@ class PublicCSignature :
                     #print m.get_length()
                    
                     z_tmp = create_entropies( vmx, m )
+                    print z_tmp[0]
                     z_tmp[0] = base64.b64encode( z_tmp[0] )
                     z.extend( z_tmp )
                 elif j["TYPE"] == "CLASSSIM" :

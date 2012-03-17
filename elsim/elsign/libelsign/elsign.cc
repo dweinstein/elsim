@@ -694,7 +694,7 @@ int Elsign::check_elem_ncd(vector <Signature *> SS, Signature *s1) {
         this->vector_result_signature.push_back( new ResultSignature( SS[ pos_ii ]->link, SS[ pos_ii ]->id, min ) );
         SS[ pos_ii ]->used = 0;
 
-        //printf("MATCH VAL %d(%d) %d(%d) = %f\n", SS[ pos_ii ]->id, SS[ pos_ii ]->value.length(), s1->id, s1->value.length(), current_value);
+        //printf("1 MATCH VAL %d(%d) %d(%d) = %f\n", SS[ pos_ii ]->id, SS[ pos_ii ]->value.length(), s1->id, s1->value.length(), current_value);
         
         MSignature *ms = this->reverse_signatures[ SS[ pos_ii ]->link ];
         ms->formula->set_value(SS[ pos_ii ]->pos, 1);
@@ -712,7 +712,7 @@ int Elsign::check_elem_ncd(vector <Signature *> SS, Signature *s1) {
             this->vector_result_signature.push_back( new ResultSignature( SS[ pos_ii ]->link, SS[ pos_ii ]->id, current_value ) );
             SS[ pos_ii ]->used = 0;
 
-            //printf("MATCH VAL %d(%d) %d(%d) = %f\n", SS[ pos_ii ]->id, SS[ pos_ii ]->value.length(), s1->id, s1->value.length(), current_value);
+            //printf("2 MATCH VAL %d(%d) %d(%d) = %f\n", SS[ pos_ii ]->id, SS[ pos_ii ]->value.length(), s1->id, s1->value.length(), current_value);
         
             MSignature *ms = this->reverse_signatures[ SS[ pos_ii ]->link ];
             ms->formula->set_value(SS[ pos_ii ]->pos, 1);

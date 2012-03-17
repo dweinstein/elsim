@@ -18,21 +18,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Elsim.  If not, see <http://www.gnu.org/licenses/>.
 
-import hashlib
-
+import hashlib, re
 from androguard.core.androconf import error, warning, debug, set_debug, get_debug
 
 from androguard.core.bytecodes import dvm
 from androguard.core.analysis import analysis
 import elsim
 
+DEFAULT_SIGNATURE = analysis.SIGNATURE_L0_0
+
 def filter_sim_value_meth( v ) :
     if v >= 0.2 :
         return 1.0
     return v
-
-def filter_skip_meth_basic( m ) :
-    return False
 
 class CheckSumMeth :
     def __init__(self, m1, sim) :
@@ -54,14 +52,14 @@ class CheckSumMeth :
 
     def get_signature(self) :
         if self.signature == None :
-            self.signature = self.m1.vmx.get_method_signature( self.m1.m, predef_sign = analysis.SIGNATURE_L0_0 ).get_string()
+            self.signature = self.m1.vmx.get_method_signature( self.m1.m, predef_sign = DEFAULT_SIGNATURE ).get_string()
             self.signature_entropy, _ = self.sim.entropy( self.signature )
 
         return self.signature
     
     def get_signature_entropy(self) :
         if self.signature == None :
-            self.signature = self.m1.vmx.get_method_signature( self.m1.m, predef_sign = analysis.SIGNATURE_L0_0 ).get_string()
+            self.signature = self.m1.vmx.get_method_signature( self.m1.m, predef_sign = DEFAULT_SIGNATURE ).get_string()
             self.signature_entropy, _ = self.sim.entropy( self.signature )
 
         return self.signature_entropy
@@ -86,9 +84,11 @@ def filter_sim_meth_old( m1, m2, sim ) :
 
 def filter_sim_meth_basic( sim, m1, m2 ) :
     ncd1, _ = sim.ncd( m1.checksum.get_signature(), m2.checksum.get_signature() )
-    ncd2, _ = sim.ncd( m1.checksum.get_buff(), m2.checksum.get_buff() )
+    return ncd1
 
-    return (ncd1 + ncd2) / 2.0
+#    ncd2, _ = sim.ncd( m1.checksum.get_buff(), m2.checksum.get_buff() )
+
+#    return (ncd1 + ncd2) / 2.0
 
 def filter_sort_meth_basic( j, x, value ) :
     z = sorted(x.iteritems(), key=lambda (k,v): (v,k))
@@ -507,19 +507,42 @@ def filter_sort_bb_basic( j, x, value ) :
     return z[:1]
 
 def filter_skip_meth_sim( m ) :
+    regexp = "Lorg/simpleframework"
+
+    if re.match(regexp, m.m.get_class_name()) != None :
+        return True
+
     if m.get_length() < 100 :
         return True
     return False
 
-FILTERS_DALVIK = {
-    elsim.FILTER_ELEMENT_METH     : filter_element_meth_basic,
-    elsim.FILTER_CHECKSUM_METH    : filter_checksum_meth_basic,
-    elsim.FILTER_SIM_METH         : filter_sim_meth_basic,
-    elsim.FILTER_SORT_METH        : filter_sort_meth_basic,
-    elsim.FILTER_SORT_VALUE       : 0.8,
-    elsim.FILTER_SKIPPED_METH     : filter_skip_meth_basic,
-    elsim.FILTER_SIM_VALUE_METH   : filter_sim_value_meth,
-}
+import re
+class FilterSkip :
+    def __init__(self, size, regexp) :
+        self.size = size
+        self.regexp = regexp
+
+    def skip(self, m) :
+        if self.size != None and m.get_length() < self.size :
+            return True
+        
+        if self.regexp != None and re.match(self.regexp, m.m.get_class_name()) != None :
+            return True
+
+        return False
+
+    def set_regexp(self, e) :
+        self.regexp = e
+
+    def set_size(self, e) :
+        if e != None :
+            self.size = int(e)
+        else :
+            self.size = e
+
+class FilterNone :
+    def skip(self, e) :
+        return False
 
 FILTERS_DALVIK_SIM = {
     elsim.FILTER_ELEMENT_METH     : filter_element_meth_basic,
@@ -527,7 +550,7 @@ FILTERS_DALVIK_SIM = {
     elsim.FILTER_SIM_METH         : filter_sim_meth_basic,
     elsim.FILTER_SORT_METH        : filter_sort_meth_basic,
     elsim.FILTER_SORT_VALUE       : 0.4,
-    elsim.FILTER_SKIPPED_METH     : filter_skip_meth_sim,
+    elsim.FILTER_SKIPPED_METH     : FilterSkip(None, None),
     elsim.FILTER_SIM_VALUE_METH   : filter_sim_value_meth,
 }
 
@@ -593,7 +616,7 @@ FILTERS_DALVIK_SIM_STRING = {
     elsim.FILTER_SIM_METH         : filter_sim_meth_string,
     elsim.FILTER_SORT_METH        : filter_sort_meth_string,
     elsim.FILTER_SORT_VALUE       : 0.8,
-    elsim.FILTER_SKIPPED_METH     : filter_skip_meth_string,
+    elsim.FILTER_SKIPPED_METH     : FilterNone(),
     elsim.FILTER_SIM_VALUE_METH   : filter_sim_value_meth,
 }
 
@@ -603,7 +626,7 @@ FILTERS_DALVIK_BB = {
     elsim.FILTER_SIM_METH         : filter_sim_bb_basic,
     elsim.FILTER_SORT_METH        : filter_sort_bb_basic,
     elsim.FILTER_SORT_VALUE       : 0.8,
-    elsim.FILTER_SKIPPED_METH     : filter_skip_meth_basic,
+    elsim.FILTER_SKIPPED_METH     : FilterNone(),
     elsim.FILTER_SIM_VALUE_METH   : filter_sim_value_meth,
 }
 
