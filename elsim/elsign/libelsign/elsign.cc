@@ -276,6 +276,7 @@ int Elsign::check() {
 
     ClusterInfo *ci = new ClusterInfo();
 
+    this->clustering_init_rows(ci);
     this->clustering(ci);
     if (this->sim_method == NCD_METHOD) {
         ret = this->check_sim(ci);
@@ -292,6 +293,7 @@ int Elsign::check_all() {
 
     ClusterInfo *ci = new ClusterInfo();
 
+    this->clustering_init_rows(ci);
     this->clustering(ci);
     if (this->sim_method == NCD_METHOD) {
         ret = this->check_sim_all(ci);
@@ -311,15 +313,13 @@ int Elsign::check_string(const char *input, size_t input_size) {
     return ret;
 }
 
-int Elsign::clustering(ClusterInfo *ci) {
-    int ret = -1;
-    
+int Elsign::clustering_init_rows(ClusterInfo *ci) {
     if (this->db.log) {
-        cout << "CHECK SIM\n";
+        cout << "Clustering init rows\n";
     }
-
+    
     if (entropies_hashmap_sign_ncd.size() == 0)
-        return ret;
+        return -1;
 
     /* Fix Cluster */
     this->set_npass( entropies_hashmap_sign_ncd.size() );
@@ -329,7 +329,13 @@ int Elsign::clustering(ClusterInfo *ci) {
     if (this->db.log) {
         cout << "ROWS " << ci->nrows << "\n";
     }
+    
+    return 0;
+}
 
+int Elsign::clustering(ClusterInfo *ci) {
+    int ret = -1;
+    
     double** data = (double **)malloc(ci->nrows*sizeof(double*));
     int** mask = (int **)malloc(ci->nrows*sizeof(int*));
 
@@ -750,16 +756,16 @@ int Elsign::check_elem_ncd_all(vector <Signature *> SS, Signature *s1) {
 
     unsigned int ii;
     for(ii=0; ii < SS.size(); ii++) {
-        if (SS[ ii ]->used == 0)
-            continue;
-
         current_value = sign_ncd( s1->value, SS[ ii ]->value, 0 );
-        if (current_value <= threshold_value_high)
+        if (current_value <= threshold_value_low)
         {
-            this->vector_result_signature.push_back( new ResultSignature( SS[ ii ]->link, SS[ ii ]->id, current_value ) );
-
             MSignature *ms = this->reverse_signatures[ SS[ ii ]->link ];
             ms->formula->set_value(SS[ ii ]->pos, 1);
+                
+            if (ms->formula->eval() == 1) {
+                this->vector_result_signature.push_back( new ResultSignature( SS[ ii ]->link, SS[ ii ]->id, s1->id, current_value ) );
+                ms->formula->raz();
+            }
         }
     }
 
@@ -1109,6 +1115,7 @@ static PyObject *Elsign_check_all(sign_ElsignObject *self, PyObject *args)
 
             PyList_Append( icheck_list, PyInt_FromLong( self->s->vector_result_signature[ ii ]->link ) );
             PyList_Append( icheck_list, PyInt_FromLong( self->s->vector_result_signature[ ii ]->id ) );
+            PyList_Append( icheck_list, PyInt_FromLong( self->s->vector_result_signature[ ii ]->id_cmp ) );
             PyList_Append( icheck_list, PyFloat_FromDouble( self->s->vector_result_signature[ ii ]->value ) );
 
             PyList_Append( check_list, icheck_list );

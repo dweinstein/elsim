@@ -104,6 +104,9 @@ class DalvikElsign :
         self.class_elsign.set_ncd_compression_algorithm( 5 )
       
     def add_signature(self, type_signature, x, y, z) :
+        ret = None
+        #print type_signature, x, y, z
+        
         # FIX ENTROPIES (old version)
         for j in z :
             if len(j[0]) == 5 :
@@ -113,15 +116,16 @@ class DalvikElsign :
         y = FIX_FORMULA(y, len(z))
 
         if type_signature == METHSIM :
-            self.meth_elsign.add_signature(x, y, z)
+            ret = self.meth_elsign.add_signature(x, y, z)
         elif type_signature == CLASSSIM :
-            self.class_elsign.add_signature(x, y, z)
+            ret = self.class_elsign.add_signature(x, y, z)
 
+        return ret
 
     def set_debug(self, debug) :
         self.debug = debug
         x = { True : 1, False : 0 }
-        #self.meth_elsign.set_debug_log(x[debug])
+        self.meth_elsign.set_debug_log(x[debug])
 
     def load_meths(self, vm, vmx) :
         if self.debug :
@@ -214,29 +218,6 @@ class DalvikElsign :
 
         return ret[0], ret[1:]
 
-class DalvikMElsign(DalvikElsign) :
-    def check(self, vm, vmx) :
-        self.load_meths(vm, vmx)
-        
-        if self.debug :
-            print "CM",
-            sys.stdout.flush()
-        ret = self.meth_elsign.check_all()
-        
-        if self.debug :
-            dt = self.meth_elsign.get_debug()
-            debug_nb_sign = dt[0]
-            debug_nb_clusters = dt[1]
-            debug_nb_cmp_clusters = dt[2]
-            debug_nb_elements = dt[3]
-            debug_nb_cmp_elements = dt[4]
-
-            debug_nb_cmp_max = debug_nb_sign * debug_nb_elements
-            print "[SIGN:%d CLUSTERS:%d CMP_CLUSTERS:%d ELEMENTS:%d CMP_ELEMENTS:%d" % (debug_nb_sign, debug_nb_clusters, debug_nb_cmp_clusters, debug_nb_elements, debug_nb_cmp_elements),
-            print "-> %d %f%%]" % (debug_nb_cmp_max, ((debug_nb_cmp_elements/float(debug_nb_cmp_max)) * 100) ), 
-
-        return ret[0], ret[1:]
-
 class PublicSignature :
     def __init__(self, database, config, debug=False) :
         self.debug = debug
@@ -323,20 +304,6 @@ class PublicSignature :
         del vmx, vm
 
         return ret
-
-class PublicMSignature(PublicSignature) :
-    def __init__(self, database, config, debug=False) :
-        self.debug = debug
-        self.DE = DalvikMElsign()
-        self.DE.set_debug( debug )
-
-        self.database = database
-        self.config = config
-
-        print self.database, self.config, debug
-        
-        self._load()
-
 
 class MSignature :
     def __init__(self, dbname, dbconfig, debug, ps=PublicSignature) :

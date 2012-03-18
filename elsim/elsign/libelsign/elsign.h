@@ -76,12 +76,19 @@ class ResultSignature {
     public :
         int link;
         int id;
+        int id_cmp;
     
         float value;
     public :
         ResultSignature(int id_link, int id, float value) {
             this->link = id_link;
             this->id = id;
+            this->value = value;
+        }
+        ResultSignature(int id_link, int id, int id_cmp, float value) {
+            this->link = id_link;
+            this->id = id;
+            this->id_cmp = id_cmp;
             this->value = value;
         }
 };
@@ -228,7 +235,9 @@ class Elsign {
 
         int check_string(const char *input, size_t input_size);
 
+        int clustering_init_rows(ClusterInfo *ci);
         int clustering(ClusterInfo *ci);
+
         int check_sim(ClusterInfo *ci);
         int check_sim_all(ClusterInfo *ci);
 
