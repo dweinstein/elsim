@@ -205,7 +205,7 @@ Signature *Elsign::create_sub_signature(const char *input, unsigned int input_si
 
 void Elsign::update_sub_signature(Signature *s, unsigned int id, unsigned int id_link, unsigned int value_link) {
     if (this->db.log) {
-        cout << "UPDATE SUB SIGN " << "\n";
+        cout << "UPDATE SUB SIGN " << id << "\n";
     }
     s->id = id;
     s->link = id_link;

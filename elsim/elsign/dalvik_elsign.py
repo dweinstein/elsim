@@ -194,7 +194,8 @@ class DalvikElsign :
 
             debug_nb_cmp_max = debug_nb_sign * debug_nb_elements
             print "[SIGN:%d CLUSTERS:%d CMP_CLUSTERS:%d ELEMENTS:%d CMP_ELEMENTS:%d" % (debug_nb_sign, debug_nb_clusters, debug_nb_cmp_clusters, debug_nb_elements, debug_nb_cmp_elements),
-            print "-> %d %f%%]" % (debug_nb_cmp_max, ((debug_nb_cmp_elements/float(debug_nb_cmp_max)) * 100) ), 
+            print "-> %d %f%%]" % (debug_nb_cmp_max, ((debug_nb_cmp_elements/float(debug_nb_cmp_max)) * 100) ),
+            print ret[1:],
 
         if ret[0] == None :
             self.load_classes(vm, vmx)
@@ -215,6 +216,7 @@ class DalvikElsign :
                 debug_nb_cmp_max = debug_nb_sign * debug_nb_elements
                 print "[SIGN:%d CLUSTERS:%d CMP_CLUSTERS:%d ELEMENTS:%d CMP_ELEMENTS:%d" % (debug_nb_sign, debug_nb_clusters, debug_nb_cmp_clusters, debug_nb_elements, debug_nb_cmp_elements),
                 print "-> %d %f%%]" % (debug_nb_cmp_max, ((debug_nb_cmp_elements/float(debug_nb_cmp_max)) * 100) ), 
+                print ret[1:],
 
         return ret[0], ret[1:]
 
@@ -522,8 +524,12 @@ class CSignature :
             nb = 0
             for ssign in buff[i][0] :
                 if ssign[0] == METHSIM :
-                    ids[ base64.b64decode( ssign[1] ) ] = (i, nb)
-                    meth_sim.append( base64.b64decode( ssign[1] ) )
+                    value = base64.b64decode( ssign[1] )
+                    if value in ids :
+                        print "IDENTICAL", ids[ value ], i, nb
+                    else :
+                        ids[ value ] = (i, nb)
+                        meth_sim.append( value )
                 elif ssign[0] == CLASSSIM :
                     ids[ base64.b64decode( ssign[1] ) ] = (i, nb)
                     class_sim.append( base64.b64decode( ssign[1] ) )
@@ -547,7 +553,7 @@ class CSignature :
                     if ret < 0.3 :
                         ids_cmp = ids[ i ] + ids[ j ]
                         if ids_cmp not in problems :
-                            s.set_compress_type( similarity.XZ_COMPRESS )
+                            s.set_compress_type( similarity.BZ2_COMPRESS )
                             ret = s.ncd( i, j )[0]
                             s.set_compress_type( similarity.SNAPPY_COMPRESS )
                             print "[-] ", ids[ i ], ids[ j ], ret
