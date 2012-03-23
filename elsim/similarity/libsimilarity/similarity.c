@@ -104,7 +104,8 @@ size_t compress(int level, void *orig, size_t size_orig)
 {
     int context;
     size_t s1;
-    size_t size_tmp_buff, ret;
+    size_t size_tmp_buff;
+    int ret;
     void *tmp_buff;
 
     tmp_buff = alloc_buff( size_orig, 0, &size_tmp_buff, &context );
@@ -125,7 +126,8 @@ int ncd(int level, libsimilarity_t *n)
 {
     int context;
     size_t s1, s2, s3;
-    size_t size_tmp_buff, size_join_buff, max, min, ret;
+    size_t size_tmp_buff, size_join_buff, max, min;
+    int ret;
     void *tmp_buff, *joinbuff;
 
     //printf("%d N = 0x%x %x %d %x %d %x %x\n", level, n, n->orig, n->size_orig, n->cmp, n->size_cmp, n->corig, n->ccmp);
@@ -219,7 +221,8 @@ int cmid(int level, libsimilarity_t *n)
 {
     int context;
     size_t s1, s2, s3;
-    size_t size_tmp_buff, size_join_buff, max, min, ret;
+    size_t size_tmp_buff, size_join_buff, max, min;
+    int ret;
     void *tmp_buff, *joinbuff;
 
     //printf("ORIG = 0x%x SIZE_ORIG = 0x%x CMP = 0x%x SIZE_CMP = 0x%x 0x%x 0x%x\n", (unsigned int)(n->orig), n->size_orig, (unsigned int)(n->cmp), n->size_cmp, *(n->corig), *(n->ccmp));
@@ -327,7 +330,7 @@ unsigned int kolmogorov(int level, void *orig, size_t size_orig)
 /* Haypo */
 
 double RDTSC(void) {
-#ifdef linux
+#if defined linux || defined __APPLE__
     unsigned long long x;
     __asm__ volatile (".byte 0x0f, 0x31" : "=A"(x));
     return (double)x;

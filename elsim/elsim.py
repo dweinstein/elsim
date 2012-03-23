@@ -326,6 +326,19 @@ class Elsim :
                 for j in self.filters[ SIMILARITY_SORT_ELEMENTS ][ i ] :
                     print "\t\t-->", j.get_info(), self.filters[ SIMILARITY_ELEMENTS ][ i ][ j ]
     
+    def get_element_info(self, i) :
+        
+        l = []
+
+        if i.getsha256() == None :
+            pass
+        elif i.getsha256() in self.ref_set_els[self.e2] :
+            l.append( [ i, self.ref_set_els[self.e2][ i.getsha256() ] ] )
+        else :
+            for j in self.filters[ SIMILARITY_SORT_ELEMENTS ][ i ] :
+                l.append( [i, j, self.filters[ SIMILARITY_ELEMENTS ][ i ][ j ] ] )
+        return l
+
     def get_associated_element(self, i) :
         return list(self.filters[ SIMILARITY_SORT_ELEMENTS ][ i ])[0]
 

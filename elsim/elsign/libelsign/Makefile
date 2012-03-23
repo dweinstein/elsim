@@ -3,7 +3,14 @@ SRC	= 	elsign.cc
 PATH_SIMILARITY = ../../similarity/libsimilarity/
 PATH_FORMULA = ../formula/
 
-LDFLAGS =	-lm -lbz2 -lz -llzma -lsnappy -lmuparser 
+CUROS = $(shell uname -s)
+
+ifeq ($(CUROS),Darwin)
+LDFLAGS =	-lm -lbz2 -lz -llzma -lsnappy -lmuparser -lpython
+else
+LDFLAGS =	-lm -lbz2 -lz -llzma -lsnappy -lmuparser
+endif
+
 CFLAGS  += 	-Wall -fPIC -I/usr/include/python2.7/ -I$(PATH_SIMILARITY) -I$(PATH_FORMULA)
 
 mkdir	=	mkdir -p

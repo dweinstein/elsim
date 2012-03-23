@@ -33,9 +33,14 @@
 
 #include <iostream>
 #include <google/sparse_hash_map>
-#include <hash_map>
 #include <string>
 #include <vector>
+
+#if defined __GNUC__ || defined __APPLE__
+#include <ext/hash_map>
+#else
+#include <hash_map>
+#endif
 
 using namespace __gnu_cxx;
 using namespace std;
