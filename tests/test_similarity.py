@@ -338,7 +338,7 @@ if __name__ == "__main__" :
         #TestProperties( n, TESTS_RANDOM_SIGN )
         #TestSmallString( n, TESTS_SMALL_SIGN )
         
-        #TestProperties( n, RandomData() )
+#        TestProperties( n, RandomData() )
 
 
         # Closed signature

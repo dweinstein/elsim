@@ -506,16 +506,6 @@ def filter_sort_bb_basic( j, x, value ) :
 
     return z[:1]
 
-def filter_skip_meth_sim( m ) :
-    regexp = "Lorg/simpleframework"
-
-    if re.match(regexp, m.m.get_class_name()) != None :
-        return True
-
-    if m.get_length() < 100 :
-        return True
-    return False
-
 import re
 class FilterSkip :
     def __init__(self, size, regexp) :

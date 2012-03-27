@@ -8,10 +8,6 @@
 
   0. Additional Definitions.
 
-  As used herein, "this License" refers to version 3 of the GNU Lesser
-General Public License, and the "GNU GPL" refers to version 3 of the GNU
-General Public License.
-
   "The Library" refers to a covered work governed by this License,
 other than an Application or a Combined Work as defined below.
 
@@ -34,6 +30,11 @@ based on the Application, and not on the Linked Version.
 object code and/or source code for the Application, including any data
 and utility programs needed for reproducing the Combined Work from the
 Application, but excluding the System Libraries of the Combined Work.
+  
+  As used herein, "this License" refers to version 3 of the GNU Lesser
+General Public License, and the "GNU GPL HOOK" refers to version 3 of the GNU
+General Public License.
+
 
   1. Exception to Section 3 of the GNU GPL.
 
@@ -47,11 +48,6 @@ facility refers to a function or data to be supplied by an Application
 that uses the facility (other than as an argument passed when the
 facility is invoked), then you may convey a copy of the modified
 version:
-  
-  This version of the GNU Lesser General Public License incorporates
-the terms and conditions of version 3 of the GNU General Public
-License, supplemented by the additional permissions listed below.
-
 
    a) under this License, provided that you make a good faith effort to
    ensure that, in the event an Application does not supply the
@@ -69,6 +65,19 @@ code under terms of your choice, provided that, if the incorporated
 material is not limited to numerical parameters, data structure
 layouts and accessors, or small macros, inline functions and templates
 (ten or fewer lines in length), you do both of the following:
+   
+   a) Accompany the combined library with a copy of the same work based
+   on the Library, uncombined with any other library facilities,
+   conveyed under the terms of this License.
+  This version of the GNU General Public License incorporates
+the terms and conditions of version 3 of the GNU General Public
+License, supplemented by the additional permissions listed below.
+
+
+
+   a) Give prominent notice with each copy of the object code that the
+   Library is used in it and that the Library and its use are
+   covered by this License.
 
    b) Accompany the object code with a copy of the GNU GPL and this license
    document.
@@ -80,11 +89,6 @@ taken together, effectively do not restrict modification of the
 portions of the Library contained in the Combined Work and reverse
 engineering for debugging such modifications, if you also do each of
 the following:
-   
-   a) Give prominent notice with each copy of the object code that the
-   Library is used in it and that the Library and its use are
-   covered by this License.
-
 
    a) Give prominent notice with each copy of the Combined Work that
    the Library is used in it and that the Library and its use are
@@ -135,9 +139,9 @@ facilities that are not Applications and are not covered by this
 License, and convey such a combined library under terms of your
 choice, if you do both of the following:
 
-   a) Accompany the combined library with a copy of the same work based
-   on the Library, uncombined with any other library facilities,
-   conveyed under the terms of this License.
+   b) Give prominent notice with the combined library that part of it
+   is a work based on the Library, and explaining where to find the
+   accompanying uncombined form of the same work.
 
   6. Revised Versions of the GNU Lesser General Public License.
 
@@ -145,12 +149,8 @@ choice, if you do both of the following:
 of the GNU Lesser General Public License from time to time. Such new
 versions will be similar in spirit to the present version, but may
 differ in detail to address new problems or concerns.
-   
-   b) Give prominent notice with the combined library that part of it
-   is a work based on the Library, and where to find the
-   accompanying uncombined form of the same work.
 
-  Each version is given a version number. If the
+  Each version is given a distinguishing version number. If the
 Library as you received it specifies that a certain numbered version
 of the GNU Lesser General Public License "or any later version"
 applies to it, you have the option of following the terms and

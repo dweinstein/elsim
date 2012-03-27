@@ -28,16 +28,6 @@ def filter_sim_value_meth( v ) :
         return 1.0
     return v
 
-def filter_skip_meth_basic( s ) :
-    # remove whitespace elements
-    if s.string.isspace() == True :
-        return True
-
-    if len(s.string) == 0 :
-        return True
-
-    return False
-
 class CheckSumText :
     def __init__(self, s1, sim) :
         self.s1 = s1
@@ -94,10 +84,20 @@ def filter_sort_meth_basic( j, x, value ) :
 class Text :
     def __init__(self, e, el) :
         self.string = el
-    
+
+        nb = 0
+        for i in range(0, len(self.string)) :
+            if self.string[i] == " " :
+                nb += 1
+            else :
+                break
+
+        self.string = self.string[nb:]
+        self.sha256 = None
+
     def get_info(self) :
-        #return "%d %s" % (len(self.string), repr(self.string))
-        return "%d %s" % (len(self.string), "")
+        return "%d %s" % (len(self.string), repr(self.string))
+        #return "%d %s" % (len(self.string), "")
 
     def set_checksum(self, fm) :
         self.sha256 = hashlib.sha256( fm.get_buff() ).hexdigest()
@@ -109,13 +109,24 @@ class Text :
 def filter_element_meth_basic(el, e) :
     return Text( e, el )
 
+class FilterNone :
+    def skip(self, e):
+        # remove whitespace elements
+        if e.string.isspace() == True :
+            return True
+
+        if len(e.string) == 0 :
+            return True
+
+        return False
+
 FILTERS_TEXT = {
     elsim.FILTER_ELEMENT_METH     : filter_element_meth_basic,
     elsim.FILTER_CHECKSUM_METH    : filter_checksum_meth_basic,
     elsim.FILTER_SIM_METH         : filter_sim_meth_basic,
     elsim.FILTER_SORT_METH        : filter_sort_meth_basic,
     elsim.FILTER_SORT_VALUE       : 0.6,
-    elsim.FILTER_SKIPPED_METH     : filter_skip_meth_basic,
+    elsim.FILTER_SKIPPED_METH     : FilterNone(),
     elsim.FILTER_SIM_VALUE_METH   : filter_sim_value_meth,
 }
 
