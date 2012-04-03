@@ -363,7 +363,10 @@ class Elsim :
         similarity_value = 0.0
         for i in values :
             similarity_value += (1.0 - i)
-    
+
+        if len(values) == 0 :
+            return 0.0
+
         return (similarity_value/len(values)) * 100
 
     def show(self): 

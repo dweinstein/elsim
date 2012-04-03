@@ -213,7 +213,76 @@ class SIMILARITY :
             nb += len(caches[i])
         return nb
 
+    def simhash(self, x) :
+        import simhash
+        return simhash.simhash(x)
+
     def show(self) :
         print "ECACHES", len(self.__ecaches)
         print "RCACHES", self.__nb_caches( self.__rcaches )
         print "CACHES", self.__nb_caches( self.__caches )
+
+import json
+class DBFormat:
+    def __init__(self, filename):
+        self.filename = filename
+       
+        self.D = {}
+
+        try :
+            fd = open(self.filename, "r")
+            self.D = json.load( fd )
+            fd.close()
+        except IOError :
+            pass
+
+        self.H = {}
+        for i in self.D :
+            self.H[i] = {}
+            for j in self.D[i] :
+                self.H[i][j] = set()
+                for k in self.D[i][j] :
+                    self.H[i][j].add( k )
+
+    def add_element(self, name, sname, elem):
+        try :
+            if elem not in self.D[ name ] :
+                self.D[ name ][ sname ].append( elem )
+        except KeyError :
+            if name not in self.D :
+                self.D[ name ] = {}
+                self.D[ name ][ sname ] = []
+                self.D[ name ][ sname ].append( elem )
+            if sname not in self.D[ name ] :
+                self.D[ name ][ sname ] = []
+                self.D[ name ][ sname ].append( elem )
+
+    def is_present(self, elem) :
+        for i in self.D :
+            if elem in self.D[i] :
+                return True, i
+        return False, None
+
+    def elems_are_presents(self, elems) :
+        ret = {}
+        for i in self.H:
+            for j in self.H[i] :
+                ret[ j ] = [self.H[i][j].intersection(elems), len(self.H[i][j]), i]
+                if ((float(len(ret[j][0]))/(ret[j][1] / 2.0)) * 100) >= 20 :
+                #if len(ret[j][0]) >= (ret[j][1] / 2.0) :
+                    ret[j].append(True)
+                else:
+                    ret[j].append(False)
+
+        return ret
+
+    def show(self) :
+        for i in self.D :
+            print i, ":"
+            for j in self.D[i] :
+                print "\t", j, len(self.D[i][j])
+
+    def save(self):
+        fd = open(self.filename, "w")
+        json.dump(self.D, fd)
+        fd.close()
