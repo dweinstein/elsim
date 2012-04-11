@@ -143,7 +143,7 @@ class DalvikElsign :
         if self.debug :
             print "LC",
             sys.stdout.flush()
-        
+       
         # Add classes for CLASSSIM
         for c in vm.get_classes() :
             value = ""

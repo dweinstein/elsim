@@ -33,8 +33,7 @@ from androguard.core import androconf
 from androguard.core.bytecodes import apk, dvm
 from androguard.core.analysis import analysis
 
-
-DEFAULT_SIGNATURE = analysis.SIGNATURE_L0_4
+DEFAULT_SIGNATURE = analysis.SIGNATURE_SEQUENCE_BB
 option_0 = { 'name' : ('-i', '--input'), 'help' : 'file : use these filenames', 'nargs' : 1 }
 option_1 = { 'name' : ('-o', '--output'), 'help' : 'file : use these filenames', 'nargs' : 1 }
 option_2 = { 'name' : ('-n', '--name'), 'help' : 'file : use these filenames', 'nargs' : 1 }
@@ -60,18 +59,25 @@ def main(options, arguments) :
         n.set_compress_type( ZLIB_COMPRESS )
 
         db = DBFormat( options.output )
-        for method in d1.get_methods() :
 
-            code = method.get_code()
-            if code == None :
-                continue
+        for _class in d1.get_classes() :
+            for method in _class.get_methods() :
 
-            if method.get_length() < 50 :
-                continue
-            print method.get_class_name(), method.get_name(), method.get_descriptor(), method.get_length()
+                code = method.get_code()
+                if code == None :
+                    continue
 
-            buff = dx1.get_method_signature(method, predef_sign = DEFAULT_SIGNATURE).get_string()
-            db.add_element( options.name, options.subname, long(n.simhash(buff)) )
+                if method.get_length() < 50 or method.get_name() == "<clinit>" :
+                    continue
+
+                buff_list = dx1.get_method_signature( method, predef_sign = DEFAULT_SIGNATURE ).get_list()
+                if len(set(buff_list)) == 1 :
+                    continue
+            
+                print method.get_class_name(), method.get_name(), method.get_descriptor(), method.get_length(), len(buff_list)
+                for i in buff_list :
+                    db.add_element( options.name, options.subname, _class.get_name(), long(n.simhash(i)) )
+
         db.save()
 
     elif options.version != None :

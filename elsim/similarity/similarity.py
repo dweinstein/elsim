@@ -240,22 +240,29 @@ class DBFormat:
         for i in self.D :
             self.H[i] = {}
             for j in self.D[i] :
-                self.H[i][j] = set()
+                self.H[i][j] = {}
                 for k in self.D[i][j] :
-                    self.H[i][j].add( k )
+                    self.H[i][j][k] = set()
+                    for e in self.D[i][j][k] :
+                        self.H[i][j][k].add( e )
 
-    def add_element(self, name, sname, elem):
+    def add_element(self, name, sname, sclass, elem):
         try :
-            if elem not in self.D[ name ] :
-                self.D[ name ][ sname ].append( elem )
+            if elem not in self.D[ name ][ sname ][ sclass ] :
+                self.D[ name ][ sname ][ sclass ].append( elem )
         except KeyError :
             if name not in self.D :
                 self.D[ name ] = {}
-                self.D[ name ][ sname ] = []
-                self.D[ name ][ sname ].append( elem )
-            if sname not in self.D[ name ] :
-                self.D[ name ][ sname ] = []
-                self.D[ name ][ sname ].append( elem )
+                self.D[ name ][ sname ] = {}
+                self.D[ name ][ sname ][ sclass ] = []
+                self.D[ name ][ sname ][ sclass ].append( elem )
+            elif sname not in self.D[ name ] :
+                self.D[ name ][ sname ] = {}
+                self.D[ name ][ sname ][ sclass ] = []
+                self.D[ name ][ sname ][ sclass ].append( elem )
+            elif sclass not in self.D[ name ][ sname ] :
+                self.D[ name ][ sname ][ sclass ] = []
+                self.D[ name ][ sname ][ sclass ].append( elem )
 
     def is_present(self, elem) :
         for i in self.D :
@@ -266,13 +273,17 @@ class DBFormat:
     def elems_are_presents(self, elems) :
         ret = {}
         for i in self.H:
+            ret[i] = {}
             for j in self.H[i] :
-                ret[ j ] = [self.H[i][j].intersection(elems), len(self.H[i][j]), i]
-                if ((float(len(ret[j][0]))/(ret[j][1] / 2.0)) * 100) >= 20 :
-                #if len(ret[j][0]) >= (ret[j][1] / 2.0) :
-                    ret[j].append(True)
-                else:
-                    ret[j].append(False)
+                ret[i][j] = {}
+                for k in self.H[i][j] :
+                    val = [self.H[i][j][k].intersection(elems), len(self.H[i][j][k])]
+                    ret[i][j][k] = val 
+                    if ((float(len(val[0]))/(val[1])) * 100) >= 50 :
+                    #if len(ret[j][0]) >= (ret[j][1] / 2.0) :
+                        val.append(True)
+                    else:
+                        val.append(False)
 
         return ret
 
@@ -281,6 +292,8 @@ class DBFormat:
             print i, ":"
             for j in self.D[i] :
                 print "\t", j, len(self.D[i][j])
+                for k in self.D[i][j] :
+                    print "\t\t", k, len(self.D[i][j][k])
 
     def save(self):
         fd = open(self.filename, "w")

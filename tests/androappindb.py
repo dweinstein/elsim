@@ -34,8 +34,7 @@ from androguard.core.bytecodes import apk, dvm
 from androguard.core.analysis import analysis
 
 
-DEFAULT_SIGNATURE = analysis.SIGNATURE_L0_4
-
+DEFAULT_SIGNATURE = analysis.SIGNATURE_SEQUENCE_BB
 option_0 = { 'name' : ('-i', '--input'), 'help' : 'file : use these filenames', 'nargs' : 1 }
 option_1 = { 'name' : ('-b', '--database'), 'help' : 'file : use these filenames', 'nargs' : 1 }
 option_2 = { 'name' : ('-l', '--listdatabase'), 'help' : 'file : use these filenames', 'action' : 'count' }
@@ -43,6 +42,57 @@ option_3 = { 'name' : ('-d', '--display'), 'help' : 'display the file in human r
 option_4 = { 'name' : ('-v', '--version'), 'help' : 'version of the API', 'action' : 'count' }
 
 options = [option_0, option_1, option_2, option_3, option_4]
+
+def show_res(ret) :
+    for i in ret :
+        for j in ret[i] :
+            for k in ret[i][j] :
+                val = ret[i][j][k]
+                if len(val[0]) == 1 and val[1] > 1:
+                    continue
+
+                if options.display :
+                    print "\t", i, j, k, len(val[0]), val[1]
+                else :
+                    if val[2] == True :
+                        print "\t", i, j, k, len(val[0]), val[1]
+
+def eval_res(ret) :
+    sorted_elems = {}
+    for i in ret :
+        sorted_elems[i] = []
+        for j in ret[i] :
+            final_value = 0
+            total_value = 0
+            elems = set()
+#            print i, j, final_value
+            for k in ret[i][j] :
+                val = ret[i][j][k]
+                total_value += 1 
+
+                if len(val[0]) == 1 and val[1] > 1:
+                    continue
+
+                ratio = (len(val[0]) / float(val[1]))
+#                print "\t", k, len(val[0]), val[1]
+                if ratio > 0.2 :
+                    if len(val[0]) > 10 or ratio > 0.8 :
+                        final_value += ratio
+                        elems.add( (k, ratio, len(val[0])) )
+
+            if final_value != 0 : 
+                #print "---->", i, j, (final_value/total_value)*100#, elems
+                sorted_elems[i].append( (j, (final_value/total_value)*100, elems) )
+        
+        if len(sorted_elems[i]) == 0 :
+            del sorted_elems[i]
+
+    for i in sorted_elems :
+        print i
+        v = sorted(sorted_elems[i], key=lambda x: x[1])
+        v.reverse()
+        for j in v :
+            print "\t", j[0], j[1]
 
 ############################################################
 def main(options, arguments) :
@@ -64,31 +114,29 @@ def main(options, arguments) :
 
 
         db = DBFormat( options.database )
+
         elems_hash = set()
+        for _class in d1.get_classes() :
+        #    print _class.get_name()
+            for method in _class.get_methods() :
 
-        for method in d1.get_methods() :
+                code = method.get_code()
+                if code == None :
+                    continue
 
-            code = method.get_code()
-            if code == None :
-                continue
+                buff_list = dx1.get_method_signature( method, predef_sign = DEFAULT_SIGNATURE ).get_list()
 
-           # bc = code.get_bc()
-           # buff = ""
-           # for i in bc.get() :
-           #     buff += "%s %s" % (i.get_name(), i.get_operands()) #, i.get_formatted_operands()
+                for i in buff_list :
+                    elem_hash = long(n.simhash( i ))
+                    elems_hash.add( elem_hash )
 
-            buff = dx1.get_method_signature(method, predef_sign = DEFAULT_SIGNATURE).get_string()
-       
-            elem_hash = long(n.simhash( buff ))
-            elems_hash.add( elem_hash )
+            #buff = dx1.get_method_signature(method, predef_sign = DEFAULT_SIGNATURE).get_string()
+            #db.add_element( options.name, options.subname, long(n.simhash(buff)) )
 
         ret = db.elems_are_presents( elems_hash )
-        for i in ret :
-            if options.display :
-                print i, len(ret[i][0]), ret[i][1], ret[i][2]
-            else :
-                if ret[i][3] == True :
-                    print i, len(ret[i][0]), ret[i][1], ret[i][2]
+        #show_res(ret)
+        eval_res(ret)
+
 
     elif options.database != None and options.listdatabase != None :
         db = DBFormat( options.database )
