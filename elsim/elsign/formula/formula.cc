@@ -27,8 +27,8 @@ Formula::Formula(string a, int nb) {
     this->map = new vector<double *>;
     for(int i=0; i < nb; i++) {
         char tmp = 'a' + i;
-        string tmp2 = string(&tmp);
-
+        string tmp2;
+        tmp2.push_back( tmp );
         //        cout << i << " " << tmp << " " << tmp2 << "\n";
 
         double *fVal = new double();
