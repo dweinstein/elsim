@@ -28,11 +28,6 @@ def filter_sim_value_meth( v ) :
         return 1.0
     return v
 
-def filter_skip_meth_basic( f ) :
-    if f.get_nb_instructions() < 2 :
-        return True
-    return False
-
 class CheckSumFunc :
     def __init__(self, f, sim) :
         self.f = f
@@ -70,9 +65,10 @@ def filter_checksum_meth_basic( f, sim ) :
     return CheckSumFunc( f, sim )
 
 def filter_sim_meth_basic( sim, m1, m2 ) :
-    ncd1, _ = sim.ncd( m1.checksum.get_signature(), m2.checksum.get_signature() )
+    #ncd1, _ = sim.ncd( m1.checksum.get_signature(), m2.checksum.get_signature() )
     ncd2, _ = sim.ncd( m1.checksum.get_buff(), m2.checksum.get_buff() )
-    return (ncd1 + ncd2) / 2.0
+    #return (ncd1 + ncd2) / 2.0
+    return ncd2
 
 def filter_sort_meth_basic( j, x, value ) :
     z = sorted(x.iteritems(), key=lambda (k,v): (v,k))
@@ -117,13 +113,19 @@ class Function :
 def filter_element_meth_basic(el, e) :
     return Function( e, el )
 
+class FilterNone :
+    def skip(self, e) :
+        #if e.get_nb_instructions() < 2 :
+        #    return True
+        return False
+
 FILTERS_X86 = {
     elsim.FILTER_ELEMENT_METH     : filter_element_meth_basic,
     elsim.FILTER_CHECKSUM_METH    : filter_checksum_meth_basic,
     elsim.FILTER_SIM_METH         : filter_sim_meth_basic,
     elsim.FILTER_SORT_METH        : filter_sort_meth_basic,
     elsim.FILTER_SORT_VALUE       : 0.6,
-    elsim.FILTER_SKIPPED_METH     : filter_skip_meth_basic,
+    elsim.FILTER_SKIPPED_METH     : FilterNone(),
     elsim.FILTER_SIM_VALUE_METH   : filter_sim_value_meth,
 }
 
