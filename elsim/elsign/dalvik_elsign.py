@@ -228,11 +228,7 @@ class DalvikElsign :
                 finally :
                     print "-> %d %f%%]" % (debug_nb_cmp_max, percentage * 100),
 
-            print ret[1:],
-
-        if ret[0] == None :
-            self.load_classes(vm, vmx)
-            print ret[1:],
+                print ret[1:],
 
         return ret[0], ret[1:]
 
