@@ -194,7 +194,13 @@ class DalvikElsign :
 
             debug_nb_cmp_max = debug_nb_sign * debug_nb_elements
             print "[SIGN:%d CLUSTERS:%d CMP_CLUSTERS:%d ELEMENTS:%d CMP_ELEMENTS:%d" % (debug_nb_sign, debug_nb_clusters, debug_nb_cmp_clusters, debug_nb_elements, debug_nb_cmp_elements),
-            print "-> %d %f%%]" % (debug_nb_cmp_max, ((debug_nb_cmp_elements/float(debug_nb_cmp_max)) * 100) ),
+            try :
+                percentage = debug_nb_cmp_elements/float(debug_nb_cmp_max)
+            except :
+                percentage = 0
+            finally :
+                print "-> %d %f%%]" % (debug_nb_cmp_max, percentage * 100),
+
             print ret[1:],
 
         if ret[0] == None :
@@ -215,8 +221,18 @@ class DalvikElsign :
 
                 debug_nb_cmp_max = debug_nb_sign * debug_nb_elements
                 print "[SIGN:%d CLUSTERS:%d CMP_CLUSTERS:%d ELEMENTS:%d CMP_ELEMENTS:%d" % (debug_nb_sign, debug_nb_clusters, debug_nb_cmp_clusters, debug_nb_elements, debug_nb_cmp_elements),
-                print "-> %d %f%%]" % (debug_nb_cmp_max, ((debug_nb_cmp_elements/float(debug_nb_cmp_max)) * 100) ), 
-                print ret[1:],
+                try :
+                    percentage = debug_nb_cmp_elements/float(debug_nb_cmp_max)
+                except :
+                    percentage = 0
+                finally :
+                    print "-> %d %f%%]" % (debug_nb_cmp_max, percentage * 100),
+
+            print ret[1:],
+
+        if ret[0] == None :
+            self.load_classes(vm, vmx)
+            print ret[1:],
 
         return ret[0], ret[1:]
 

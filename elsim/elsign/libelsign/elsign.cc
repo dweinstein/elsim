@@ -276,14 +276,15 @@ int Elsign::check() {
 
     ClusterInfo *ci = new ClusterInfo();
 
-    this->clustering_init_rows(ci);
-    this->clustering(ci);
-    if (this->sim_method == NCD_METHOD) {
-        ret = this->check_sim(ci);
-    } else { 
+    if (this->clustering_init_rows(ci) == 0) {
+      this->clustering(ci);
+      if (this->sim_method == NCD_METHOD) {
+          ret = this->check_sim(ci);
+      }
+      
+      delete ci;
     }
    
-    delete ci;
 
     return ret;
 }
@@ -293,14 +294,14 @@ int Elsign::check_all() {
 
     ClusterInfo *ci = new ClusterInfo();
 
-    this->clustering_init_rows(ci);
-    this->clustering(ci);
-    if (this->sim_method == NCD_METHOD) {
+    if (this->clustering_init_rows(ci) == 0) {
+      this->clustering(ci);
+      if (this->sim_method == NCD_METHOD) {
         ret = this->check_sim_all(ci);
-    } else { 
+      } 
+    
+      delete ci;
     }
-   
-    delete ci;
 
     return ret;
 }
