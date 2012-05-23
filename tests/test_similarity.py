@@ -323,7 +323,7 @@ if __name__ == "__main__" :
     n = SIMILARITY( "elsim/similarity/libsimilarity/libsimilarity.so" )
 
     #TestRDTSC( n )
-    #n.set_compress_type( ZLIB_COMPRESS )
+    #n.set_compress_type( BZ2_COMPRESS )
     #n.set_compress_type( SNAPPY_COMPRESS )
     #TestBenett( n )
 

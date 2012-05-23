@@ -125,7 +125,7 @@ def split_elements(el, els) :
 # set elements : hash
 # hash table elements : hash --> element
 class Elsim :
-    def __init__(self, e1, e2, F, T=None, C=None, libpath="elsim/elsim/similarity/libsimilarity/libsimilarity.so") :
+    def __init__(self, e1, e2, F, T=None, C=None, libnative=True, libpath="elsim/elsim/similarity/libsimilarity/libsimilarity.so") :
         self.e1 = e1
         self.e2 = e2
         self.F = F
@@ -136,7 +136,11 @@ class Elsim :
         if T != None :
             self.F[ FILTER_SORT_VALUE ] = T
 
-        self.sim = SIMILARITY( libpath )
+        if isinstance(libnative, str) :
+            libpath = libnative
+            libnative = True
+
+        self.sim = SIMILARITY( libpath, libnative )
 
         self.sim.set_compress_type( self.compressor )
         if C != None :
@@ -342,7 +346,7 @@ class Elsim :
     def get_associated_element(self, i) :
         return list(self.filters[ SIMILARITY_SORT_ELEMENTS ][ i ])[0]
 
-    def get_similarity_value(self) :
+    def get_similarity_value(self, new=True) :
         values = []
 
         self.sim.set_compress_type( BZ2_COMPRESS )
@@ -356,7 +360,10 @@ class Elsim :
             values.append( value )
 
         values.extend( [ self.filters[BASE][FILTER_SIM_VALUE_METH]( 0.0 ) for i in self.filters[IDENTICAL_ELEMENTS] ] )
-        values.extend( [ self.filters[BASE][FILTER_SIM_VALUE_METH]( 1.0 ) for i in self.filters[NEW_ELEMENTS] ] )
+        if new == True :
+            values.extend( [ self.filters[BASE][FILTER_SIM_VALUE_METH]( 1.0 ) for i in self.filters[NEW_ELEMENTS] ] )
+        else :
+            values.extend( [ self.filters[BASE][FILTER_SIM_VALUE_METH]( 1.0 ) for i in self.filters[DELETED_ELEMENTS] ] )
 
         self.sim.set_compress_type( self.compressor )
 
