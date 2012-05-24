@@ -46,7 +46,6 @@ def debug(x) :
 
 from similarity.similarity import *
 
-from sklearn.neighbors import NearestNeighbors
 import numpy as np
 
 FILTER_ELEMENT_METH         =       "FILTER_ELEMENT_METH"
@@ -74,6 +73,7 @@ SIMILARITY_SORT_ELEMENTS    =       "similarity_sort_elements"
 
 class ElsimNeighbors :
     def __init__(self, x, ys) :
+        from sklearn.neighbors import NearestNeighbors
         #print x, ys
 
         CI = np.array( [x.checksum.get_signature_entropy(), x.checksum.get_entropy()] )
@@ -142,7 +142,6 @@ class Elsim :
 
         self.sim = SIMILARITY( libpath, libnative )
 
-        self.sim.set_compress_type( self.compressor )
         if C != None :
             H = { "BZ2" : BZ2_COMPRESS,
                   "ZLIB" : ZLIB_COMPRESS,
@@ -154,7 +153,8 @@ class Elsim :
                 self.compressor = H[ C ]
 
             self.sim.set_compress_type( self.compressor )
-
+        else :
+            self.sim.set_compress_type( self.compressor )
 
         self.filters = {}
 

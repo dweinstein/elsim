@@ -269,7 +269,7 @@ class SIMILARITYPython(SIMILARITYBase) :
         if self.ctype != ZLIB_COMPRESS and self.ctype != BZ2_COMPRESS :
             print "warning: compressor %d is not supported (use zlib default compressor)" % t
             self.ctype = ZLIB_COMPRESS
-            
+
     def compress(self, s1) :
         return len(self._compress(s1))
 
