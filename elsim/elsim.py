@@ -18,7 +18,7 @@
 
 import logging
 
-ELSIM_VERSION = 0.1
+ELSIM_VERSION = 0.2
 
 log_elsim = logging.getLogger("elsim")
 console_handler = logging.StreamHandler()
@@ -46,8 +46,6 @@ def debug(x) :
 
 from similarity.similarity import *
 
-import numpy as np
-
 FILTER_ELEMENT_METH         =       "FILTER_ELEMENT_METH"
 FILTER_CHECKSUM_METH        =       "FILTER_CHECKSUM_METH"      # function to checksum an element
 FILTER_SIM_METH             =       "FILTER_SIM_METH"           # function to calculate the similarity between two elements
@@ -73,6 +71,7 @@ SIMILARITY_SORT_ELEMENTS    =       "similarity_sort_elements"
 
 class ElsimNeighbors :
     def __init__(self, x, ys) :
+        import numpy as np
         from sklearn.neighbors import NearestNeighbors
         #print x, ys
 
@@ -143,14 +142,8 @@ class Elsim :
         self.sim = SIMILARITY( libpath, libnative )
 
         if C != None :
-            H = { "BZ2" : BZ2_COMPRESS,
-                  "ZLIB" : ZLIB_COMPRESS,
-                  "LZMA" : LZMA_COMPRESS,
-                  "XZ" : XZ_COMPRESS,
-                  "SNAPPY" : SNAPPY_COMPRESS,
-                  }
-            if C in H :
-                self.compressor = H[ C ]
+            if C in H_COMPRESSOR :
+                self.compressor = H_COMPRESSOR[ C ]
 
             self.sim.set_compress_type( self.compressor )
         else :

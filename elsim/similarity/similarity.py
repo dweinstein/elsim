@@ -77,6 +77,21 @@ XZ_COMPRESS =           4
 SNAPPY_COMPRESS =       5
 VCBLOCKSORT_COMPRESS =  6
 
+H_COMPRESSOR = { "BZ2" : BZ2_COMPRESS,
+                 "ZLIB" : ZLIB_COMPRESS,
+                 "LZMA" : LZMA_COMPRESS,
+                 "XZ" : XZ_COMPRESS,
+                 "SNAPPY" : SNAPPY_COMPRESS,
+               }
+
+HR_COMPRESSOR = {
+                BZ2_COMPRESS : "BZ2",
+                ZLIB_COMPRESS : "ZLIB",
+                LZMA_COMPRESS : "LZMA",
+                XZ_COMPRESS : "XZ",
+                SNAPPY_COMPRESS : "SNAPPY",
+        }
+
 class SIMILARITYBase(object) :
     def __init__(self, native_lib=False) :
         self.ctype = ZLIB_COMPRESS
@@ -267,7 +282,7 @@ class SIMILARITYPython(SIMILARITYBase) :
     def set_compress_type(self, t):
         self.ctype = t
         if self.ctype != ZLIB_COMPRESS and self.ctype != BZ2_COMPRESS :
-            print "warning: compressor %d is not supported (use zlib default compressor)" % t
+            print "warning: compressor %s is not supported (use zlib default compressor)" % HR_COMPRESSOR[ t ]
             self.ctype = ZLIB_COMPRESS
 
     def compress(self, s1) :
@@ -332,7 +347,10 @@ class SIMILARITYPython(SIMILARITYBase) :
 class SIMILARITY :
     def __init__(self, path="./libsimilarity/libsimilarity.so", native_lib=True) :
         if native_lib == True and NATIVE_LIB == True:
-            self.s = SIMILARITYNative( path )
+            try :
+                self.s = SIMILARITYNative( path )
+            except : 
+                self.s = SIMILARITYPython()
         else :
             self.s = SIMILARITYPython()
 
