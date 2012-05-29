@@ -161,13 +161,13 @@ class DiffBB :
         for i in self.bb1.ins :
             ok = False
             if nb in off_add :
-                debug("%d ADD %s %s" % (nb, off_add[ nb ][2].get_name(), off_add[ nb ][2].get_operands()))
+                debug("%d ADD %s %s" % (nb, off_add[ nb ][2].get_name(), off_add[ nb ][2].get_output()))
                 self.ins.append( off_add[ nb ][2] )
                 setattr( off_add[ nb ][2], "diff_tag", DIFF_INS_TAG["ADD"] )
                 del off_add[ nb ]
 
             if nb in off_rm :
-                debug("%d RM %s %s" % (nb, off_rm[ nb ][2].get_name(), off_rm[ nb ][2].get_operands()))
+                debug("%d RM %s %s" % (nb, off_rm[ nb ][2].get_name(), off_rm[ nb ][2].get_output()))
                 self.ins.append( off_rm[ nb ][2] )
                 setattr( off_rm[ nb ][2], "diff_tag", DIFF_INS_TAG["REMOVE"] )
                 del off_rm[ nb ]
@@ -175,7 +175,7 @@ class DiffBB :
 
             if ok == False :
                 self.ins.append( i )
-                debug("%d %s %s" % (nb, i.get_name(), i.get_operands()))
+                debug("%d %s %s" % (nb, i.get_name(), i.get_output()))
                 setattr( i, "diff_tag", DIFF_INS_TAG["ORIG"] )
 
             nb += 1
@@ -190,13 +190,13 @@ class DiffBB :
 
         while nb <= nbmax :
             if nb in off_add :
-                debug("%d ADD %s %s" % (nb, off_add[ nb ][2].get_name(), off_add[ nb ][2].get_operands()))
+                debug("%d ADD %s %s" % (nb, off_add[ nb ][2].get_name(), off_add[ nb ][2].get_output()))
                 self.ins.append( off_add[ nb ][2] )
                 setattr( off_add[ nb ][2], "diff_tag", DIFF_INS_TAG["ADD"] )
                 del off_add[ nb ]
 
             if nb in off_rm :
-                debug("%d RM %s %s" % (nb, off_rm[ nb ][2].get_name(), off_rm[ nb ][2].get_operands()))
+                debug("%d RM %s %s" % (nb, off_rm[ nb ][2].get_name(), off_rm[ nb ][2].get_output()))
                 self.ins.append( off_rm[ nb ][2] )
                 setattr( off_rm[ nb ][2], "diff_tag", DIFF_INS_TAG["REMOVE"] )
                 del off_rm[ nb ]
@@ -225,11 +225,11 @@ class DiffBB :
     def show(self) :
         print "\tADD INSTRUCTIONS :"
         for i in self.di.add_ins :
-            print "\t\t", i[0], i[1], i[2].get_name(), i[2].get_operands()
+            print "\t\t", i[0], i[1], i[2].get_name(), i[2].get_output()
 
         print "\tREMOVE INSTRUCTIONS :"
         for i in self.di.remove_ins :
-            print "\t\t", i[0], i[1], i[2].get_name(), i[2].get_operands()
+            print "\t\t", i[0], i[1], i[2].get_name(), i[2].get_output()
 
 class NewBB :
     def __init__(self, bb) :
@@ -692,7 +692,6 @@ def toString( bb, hS, rS ) :
         ident = dvm.clean_name_instruction( i )
         ident += dvm.static_operand_instruction( i )
 
-#       print i.get_name(), i.get_operands()
         if ident not in hS :
             hS[ ident ] = len(hS)
             rS[ chr( hS[ ident ] ) ] = ident
@@ -759,12 +758,12 @@ def filter_diff_bb(x, y) :
     #print map_x, map_y, a, r
     debug("DEBUG ADD")
     for i in a :
-        debug(" \t %s %s %s" % (i[0], y.bb.ins[ i[0] ].get_name(), y.bb.ins[ i[0] ].get_operands()))
+        debug(" \t %s %s %s" % (i[0], y.bb.ins[ i[0] ].get_name(), y.bb.ins[ i[0] ].get_output()))
         final_add.append( (i[0], map_y[i[0]], y.bb.ins[ i[0] ]) )
 
     debug("DEBUG REMOVE")
     for i in r :
-        debug(" \t %s %s %s" % (i[0], x.bb.ins[ i[0] ].get_name(), x.bb.ins[ i[0] ].get_operands()))
+        debug(" \t %s %s %s" % (i[0], x.bb.ins[ i[0] ].get_name(), x.bb.ins[ i[0] ].get_output()))
         final_rm.append( (i[0], map_x[i[0]], x.bb.ins[ i[0] ]) )
 
     return DiffBasicBlock( y, x, final_add, final_rm ) 

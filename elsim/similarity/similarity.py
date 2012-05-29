@@ -33,7 +33,7 @@ def entropy(data):
     return entropy
 
 try :
-    from ctypes import cdll, c_float, c_double, c_int, c_uint, c_ulong, c_void_p, Structure, addressof, cast, c_size_t
+    from ctypes import cdll, c_float, c_double, c_int, c_uint, c_void_p, Structure, addressof, cast, c_size_t
 
     #struct libsimilarity {
     #   void *orig;

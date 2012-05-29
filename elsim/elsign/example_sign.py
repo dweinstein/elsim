@@ -6,6 +6,7 @@ PATH_INSTALL = "./libelsign"
 sys.path.append(PATH_INSTALL)
 
 from libelsign import libelsign
+#from libelsign import libelsign2 as libelsign
 
 SIGNS = [ 
             [ "Sign1", "a",
