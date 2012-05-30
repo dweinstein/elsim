@@ -712,7 +712,7 @@ class DiffInstruction :
         self.ins = instruction[2]
 
     def show(self) :
-        print hex(self.bb.bb.start + self.offset), self.pos_instruction, self.ins.show_buff( self.bb.bb.start + self.offset )
+        print hex(self.bb.bb.start + self.offset), self.pos_instruction, self.ins.get_name(), self.ins.show_buff( self.bb.bb.start + self.offset )
 
 class DiffBasicBlock :
     def __init__(self, x, y, added, deleted) :
