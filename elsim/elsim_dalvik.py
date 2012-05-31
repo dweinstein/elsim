@@ -548,18 +548,18 @@ class StringVM :
     def __init__(self, el) :
         self.el = el
 
-    def set_checksum(self, fm) :                                                                                                                                                                 
+    def set_checksum(self, fm) :
         self.sha256 = hashlib.sha256( fm.get_buff() ).hexdigest()
         self.checksum = fm
    
     def get_length(self) :
         return len(self.el)
 
-    def getsha256(self) :                                                                                                                                                                        
+    def getsha256(self) :
         return self.sha256
 
     def get_info(self) :
-        return len(self.el)
+        return len(self.el), repr(self.el)
 
 def filter_element_meth_string(el, e) :
     return StringVM( el )
@@ -577,14 +577,7 @@ class CheckSumString :
 def filter_checksum_meth_string( m1, sim ) :
     return CheckSumString( m1, sim )
 
-def filter_skip_meth_string( s ) :
-    if s.get_length() < 10 :
-        return True
-    return False
-
 def filter_sim_meth_string( sim, m1, m2 ) :
-    from similarity.similarity import XZ_COMPRESS
-    sim.set_compress_type( XZ_COMPRESS )
     ncd1, _ = sim.ncd( m1.checksum.get_buff(), m2.checksum.get_buff() )
     return ncd1
 
@@ -643,9 +636,10 @@ class ProxyDalvikStringMultiple :
         self.vmx = vmx
 
     def get_elements(self) :
-        #yield ''.join( self.vm.get_strings() )
-        for i in self.vm.get_strings() :
-            yield i
+      for i in self.vmx.get_tainted_variables().get_strings() :
+        yield i[1]
+        #for i in self.vm.get_strings() :
+        #    yield i
 
 class ProxyDalvikStringOne :
     def __init__(self, vm, vmx) :
@@ -653,7 +647,7 @@ class ProxyDalvikStringOne :
         self.vmx = vmx
 
     def get_elements(self) :
-        yield ''.join( self.vm.get_strings() )
+      yield ''.join( self.vm.get_strings() )
 
 def LCS(X, Y):
     m = len(X)
