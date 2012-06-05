@@ -76,7 +76,7 @@ def eval_res(ret) :
                     continue
 
                 ratio = (len(val[0]) / float(val[1]))
-#                print "\t", k, len(val[0]), val[1]
+                #print "\t", k, len(val[0]), val[1], ratio
                 if ratio > 0.2 :
                     if len(val[0]) > 10 or ratio > 0.8 :
                         final_value += ratio
@@ -85,7 +85,7 @@ def eval_res(ret) :
             if final_value != 0 : 
                 #print "---->", i, j, (final_value/total_value)*100#, elems
                 sorted_elems[i].append( (j, (final_value/total_value)*100, elems) )
-        
+
         if len(sorted_elems[i]) == 0 :
             del sorted_elems[i]
 
@@ -124,7 +124,7 @@ class ElsimDB :
 
         ret = self.db.elems_are_presents( elems_hash )
         sorted_ret = eval_res(ret)
-    
+
         info = []
 
         for i in sorted_ret :
@@ -133,16 +133,14 @@ class ElsimDB :
 
             for j in v :
                 info.append( [j[0], j[1]] )
-        
-        return info
-        #show_sorted_elems(sorted_ret)
 
-    
+        return info
+
     def show(self) :
         info = { "info" : [], "nodes" : [], "links" : []}
         N = {}
         L = {}
-        
+
         for _class in self.vm.get_classes() :
             elems_hash = set()
         #    print _class.get_name()

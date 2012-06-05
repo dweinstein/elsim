@@ -34,8 +34,6 @@ from androguard.core import androconf
 from androguard.core.bytecodes import apk, dvm
 from androguard.core.analysis import analysis
 
-import json
-
 DEFAULT_SIGNATURE = analysis.SIGNATURE_SEQUENCE_BB
 option_0 = { 'name' : ('-i', '--input'), 'help' : 'file : use these filenames', 'nargs' : 1 }
 option_1 = { 'name' : ('-b', '--database'), 'help' : 'file : use these filenames', 'nargs' : 1 }
@@ -53,12 +51,13 @@ def main(options, arguments) :
             d1 = dvm.DalvikVMFormat( a.get_dex() )
         elif ret_type == "DEX" :
             d1 = dvm.DalvikVMFormat( open(options.input, "rb").read() )
-        
+
         dx1 = analysis.VMAnalysis( d1 )
 
+        print "Similarities ...."
         e = ElsimDB( d1, dx1, options.database )
         e.show()
-        e.percentage()
+        print e.percentage()
 
     elif options.database != None and options.listdatabase != None :
         db = DBFormat( options.database )
