@@ -25,7 +25,7 @@ from androguard.core.bytecodes import dvm
 from androguard.core.analysis import analysis
 import elsim
 
-DEFAULT_SIGNATURE = analysis.SIGNATURE_L0_0
+DEFAULT_SIGNATURE = analysis.SIGNATURE_L0_4
 
 def filter_sim_value_meth( v ) :
     if v >= 0.2 :
@@ -791,13 +791,50 @@ class DiffDalvikMethod :
         self.eld.show()
 
         self.els.show()
-        for i in self.els.get_new_elements() :
+        self._show_elements( "NEW", self.els.get_new_elements() )
+
+    def _show_elements(self, info, elements) :
+        for i in elements :
             print i.bb, hex(i.bb.start), hex(i.bb.end) #, i.bb.childs
             idx = i.bb.start
             for j in i.bb.ins :
-                print "\tNEW", hex(idx), 
+                print "\t" + info, hex(idx), 
                 j.show(idx)
                 print
                 idx += j.get_length()
-        
+
         print "\n"
+
+
+
+LIST_EXTERNAL_LIBS = [ "Lcom/google/gson",
+                      "Lorg/codehaus",
+                      "Lcom/openfeint",
+                      "Lcom/facebook",
+                      "Lorg/anddev",
+                      "Lcom/badlogic",
+                      "Lcom/rabbit",
+                      "Lme/kiip",
+                      "Lorg/cocos2d",
+                      "Ltwitter4j",
+                      "Lcom/paypal",
+                      "Lcom/electrotank",
+
+                      "Lorg/acra",
+                      "Lorg/apache",
+
+                      "Lcom/google/beintoogson",
+                      "Lcom/beintoo",
+
+                      "Lcom/scoreloop",
+                      "Lcom/MoreGames",
+
+                      #AD not covered
+                      "Lcom/mobfox",
+                      "Lcom/sponsorpay",
+                      "Lde/madvertise",
+                      "Lcom/tremorvideo",
+                      "Lcom/tapjoy",
+                      "Lcom/heyzap",
+
+        ]

@@ -19,7 +19,7 @@
 # along with Elsim.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import logging
+import logging, re
 
 from similarity.similarity_db import *
 
@@ -44,19 +44,19 @@ def eval_res_per_class(ret) :
         for j in ret[i] :
             for k in ret[i][j] :
                 val = ret[i][j][k]
+            #    print val, k
                 if len(val[0]) == 1 and val[1] > 1 :
                     continue
-               
+
                 if len(val[0]) == 0:
                     continue
 
                 if j not in z :
                     z[j] = {}
-                
+
                 val_percentage = (len(val[0]) / float(val[1]) ) * 100
                 if (val_percentage != 0) :
                     z[j][k] = val_percentage
-                    
     return z
 
 def eval_res(ret) :
@@ -107,7 +107,7 @@ class ElsimDB :
         self.vmx = vmx
         self.db = DBFormat( database_path )
 
-    def percentage(self) :
+    def percentages_ad(self) :
         elems_hash = set()
         for _class in self.vm.get_classes() :
             for method in _class.get_methods() :
@@ -133,10 +133,50 @@ class ElsimDB :
 
             for j in v :
                 info.append( [j[0], j[1]] )
-
         return info
 
-    def show(self) :
+    def percentages_code(self, exclude_list) :
+        libs = re.compile('|'.join( "(" + i + ")" for i in exclude_list))
+
+        classes_size = 0
+        classes_db_size = 0
+        classes_edb_size = 0
+        classes_udb_size = 0
+        for _class in self.vm.get_classes() :
+            class_size = 0
+            elems_hash = set()
+            for method in _class.get_methods() :
+
+                code = method.get_code()
+                if code == None :
+                    continue
+
+                buff_list = self.vmx.get_method_signature( method, predef_sign = DEFAULT_SIGNATURE ).get_list()
+
+                for i in buff_list :
+                    elem_hash = long(simhash( i ))
+                    elems_hash.add( elem_hash )
+
+                class_size += method.get_length()
+
+            classes_size += class_size
+
+            if class_size == 0 :
+                continue
+
+            ret = self.db.elems_are_presents( elems_hash )
+            sort_ret = eval_res_per_class( ret )
+            if sort_ret == {} :
+                if libs.search(_class.get_name()) != None :
+                    classes_edb_size += class_size
+                else :
+                  classes_udb_size += class_size
+            else :
+              classes_db_size += class_size
+
+        return (classes_db_size/float(classes_size)) * 100, (classes_edb_size/float(classes_size)) * 100, (classes_udb_size/float(classes_size)) * 100
+
+    def percentages_to_graph(self) :
         info = { "info" : [], "nodes" : [], "links" : []}
         N = {}
         L = {}
@@ -156,37 +196,25 @@ class ElsimDB :
                     elem_hash = long(simhash( i ))
                     elems_hash.add( elem_hash )
 
-            #buff = dx1.get_method_signature(method, predef_sign = DEFAULT_SIGNATURE).get_string()
-            #db.add_element( options.name, options.subname, long(n.simhash(buff)) )
-
             ret = self.db.elems_are_presents( elems_hash )
             sort_ret = eval_res_per_class( ret )
             if sort_ret != {} :
                 if _class.get_name() not in N :
                     info["nodes"].append( { "name" : _class.get_name().split("/")[-1], "group" : 0 } ) 
                     N[_class.get_name()] = len(N)
-            
-                #print "!!!! ", _class.get_name()
+
                 for j in sort_ret : 
-                #    print j
-                    
                     if j not in N : 
                         N[j] = len(N)
                         info["nodes"].append( { "name" : j, "group" : 1 } )
 
                     key = _class.get_name() + j
                     if key not in L :
-                #        print key
                         L[ key ] = { "source" : N[_class.get_name()], "target" : N[j], "value" : 0 } 
                         info["links"].append( L[ key ] )
 
                     for k in sort_ret[j] :
-                #        print sort_ret[j][k]
                         if sort_ret[j][k] > L[ key ]["value"] :
                             L[ key ]["value"] = sort_ret[j][k]
 
         return info
-
-            #show_res(ret)
-            #sorted_ret = eval_res(ret)
-            #show_sorted_elems(sorted_ret)

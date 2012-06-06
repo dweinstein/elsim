@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Androguard.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
+import sys, os
 sys.path.append("./")
 
 PATH_INSTALL = "../androguard"
@@ -28,6 +28,7 @@ sys.path.append(PATH_INSTALL)
 from optparse import OptionParser
 
 from elsim.elsim_db import *
+from elsim.elsim_dalvik import LIST_EXTERNAL_LIBS
 from elsim.similarity.similarity_db import *
 
 from androguard.core import androconf
@@ -35,13 +36,40 @@ from androguard.core.bytecodes import apk, dvm
 from androguard.core.analysis import analysis
 
 DEFAULT_SIGNATURE = analysis.SIGNATURE_SEQUENCE_BB
-option_0 = { 'name' : ('-i', '--input'), 'help' : 'file : use these filenames', 'nargs' : 1 }
-option_1 = { 'name' : ('-b', '--database'), 'help' : 'file : use these filenames', 'nargs' : 1 }
-option_2 = { 'name' : ('-l', '--listdatabase'), 'help' : 'file : use these filenames', 'action' : 'count' }
-option_3 = { 'name' : ('-d', '--display'), 'help' : 'display the file in human readable format', 'action' : 'count' }
+option_0 = { 'name' : ('-i', '--input'), 'help' : 'use this filename', 'nargs' : 1 }
+option_1 = { 'name' : ('-b', '--database'), 'help' : 'path of the database', 'nargs' : 1 }
+option_2 = { 'name' : ('-l', '--listdatabase'), 'help' : 'display information in the database', 'action' : 'count' }
+option_3 = { 'name' : ('-d', '--directory'), 'help' : 'use this directory', 'nargs' : 1  }
 option_4 = { 'name' : ('-v', '--version'), 'help' : 'version of the API', 'action' : 'count' }
 
 options = [option_0, option_1, option_2, option_3, option_4]
+
+
+def check_one_file(d1, dx1) :
+  print "Similarities ...."
+  e = ElsimDB( d1, dx1, options.database )
+  print e.percentages_ad()
+  print e.percentages_code(LIST_EXTERNAL_LIBS)
+
+def check_one_directory(directory) :
+    for root, dirs, files in os.walk( directory, followlinks=True ) :
+        if files != [] :
+            for f in files :
+                real_filename = root
+                if real_filename[-1] != "/" :
+                    real_filename += "/"
+                real_filename += f
+
+                print "filename: %s ..." % real_filename
+                ret_type = androconf.is_android( real_filename )
+                if ret_type == "APK" :
+                    a = apk.APK( real_filename )
+                    d1 = dvm.DalvikVMFormat( a.get_dex() )
+                elif ret_type == "DEX" :
+                    d1 = dvm.DalvikVMFormat( open(real_filename, "rb").read() )
+
+                dx1 = analysis.VMAnalysis( d1 )
+                check_one_file( d1, dx1 )
 
 def main(options, arguments) :
     if options.input != None and options.database != None :
@@ -54,10 +82,10 @@ def main(options, arguments) :
 
         dx1 = analysis.VMAnalysis( d1 )
 
-        print "Similarities ...."
-        e = ElsimDB( d1, dx1, options.database )
-        e.show()
-        print e.percentage()
+        check_one_file(d1, dx1)
+
+    elif options.directory != None and options.database != None :
+      check_one_directory( options.directory )
 
     elif options.database != None and options.listdatabase != None :
         db = DBFormat( options.database )
