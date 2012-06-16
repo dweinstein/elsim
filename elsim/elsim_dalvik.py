@@ -110,7 +110,7 @@ class CheckSumBB :
     def __init__(self, basic_block, sim) :
         self.basic_block = basic_block
         self.buff = ""
-        for i in self.basic_block.bb.ins :
+        for i in self.basic_block.bb.get_instructions() :
             self.buff += dvm.clean_name_instruction( i )
             self.buff += dvm.static_operand_instruction( i )
 
@@ -682,7 +682,7 @@ def toString( bb, hS, rS ) :
 
     idx = 0
     nb = 0
-    for i in bb.ins :
+    for i in bb.get_instructions() :
         ident = dvm.clean_name_instruction( i )
         ident += dvm.static_operand_instruction( i )
 
@@ -752,13 +752,15 @@ def filter_diff_bb(x, y) :
     #print map_x, map_y, a, r
     debug("DEBUG ADD")
     for i in a :
-        debug(" \t %s %s %s" % (i[0], y.bb.ins[ i[0] ].get_name(), y.bb.ins[ i[0] ].get_output()))
-        final_add.append( (i[0], map_y[i[0]], y.bb.ins[ i[0] ]) )
+        instructions = [ j for j in y.bb.get_instructions() ]
+        debug(" \t %s %s %s" % (i[0], instructions[ i[0] ].get_name(), instructions[ i[0] ].get_output()))
+        final_add.append( (i[0], map_y[i[0]], instructions[ i[0] ]) )
 
     debug("DEBUG REMOVE")
     for i in r :
-        debug(" \t %s %s %s" % (i[0], x.bb.ins[ i[0] ].get_name(), x.bb.ins[ i[0] ].get_output()))
-        final_rm.append( (i[0], map_x[i[0]], x.bb.ins[ i[0] ]) )
+        instructions = [ j for j in x.bb.get_instructions() ]
+        debug(" \t %s %s %s" % (i[0], instructions[ i[0] ].get_name(), instructions[ i[0] ].get_output()))
+        final_rm.append( (i[0], map_x[i[0]], instructions[ i[0] ]) )
 
     return DiffBasicBlock( y, x, final_add, final_rm ) 
 
@@ -795,9 +797,9 @@ class DiffDalvikMethod :
 
     def _show_elements(self, info, elements) :
         for i in elements :
-            print i.bb, hex(i.bb.start), hex(i.bb.end) #, i.bb.childs
-            idx = i.bb.start
-            for j in i.bb.ins :
+            print i.bb, hex(i.bb.get_start()), hex(i.bb.get_end()) #, i.bb.childs
+            idx = i.bb.get_start()
+            for j in i.bb.get_instructions() :
                 print "\t" + info, hex(idx), 
                 j.show(idx)
                 print
