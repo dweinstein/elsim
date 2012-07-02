@@ -21,8 +21,7 @@
 
 import logging, re
 
-from similarity.similarity_db import *
-
+from similarity.similarity import DBFormat, simhash
 from androguard.core.analysis import analysis
 
 DEFAULT_SIGNATURE = analysis.SIGNATURE_SEQUENCE_BB
@@ -102,119 +101,154 @@ def show_sorted_elems(sorted_elems):
 ############################################################
 
 class ElsimDB :
-    def __init__(self, vm, vmx, database_path) :
-        self.vm = vm
-        self.vmx = vmx
-        self.db = DBFormat( database_path )
+  def __init__(self, database_path) :
+      self.db = DBFormat( database_path )
 
-    def percentages_ad(self) :
-        elems_hash = set()
-        for _class in self.vm.get_classes() :
-            for method in _class.get_methods() :
+  def percentages(self, vm, vmx) :
+      elems_hash = set()
+      for _class in vm.get_classes() :
+          for method in _class.get_methods() :
 
-                code = method.get_code()
-                if code == None :
-                    continue
+              code = method.get_code()
+              if code == None :
+                  continue
 
-                buff_list = self.vmx.get_method_signature( method, predef_sign = DEFAULT_SIGNATURE ).get_list()
+              buff_list = vmx.get_method_signature( method, predef_sign = DEFAULT_SIGNATURE ).get_list()
 
-                for i in buff_list :
-                    elem_hash = long(simhash( i ))
-                    elems_hash.add( elem_hash )
+              for i in buff_list :
+                  elem_hash = long(simhash( i ))
+                  elems_hash.add( elem_hash )
 
-        ret = self.db.elems_are_presents( elems_hash )
-        sorted_ret = eval_res(ret)
+      ret = self.db.elems_are_presents( elems_hash )
+      sorted_ret = eval_res(ret)
 
-        info = []
+      info = {}
 
-        for i in sorted_ret :
-            v = sorted(sorted_ret[i], key=lambda x: x[1])
-            v.reverse()
+      for i in sorted_ret :
+          v = sorted(sorted_ret[i], key=lambda x: x[1])
+          v.reverse()
 
-            for j in v :
-                info.append( [j[0], j[1]] )
-        return info
+          info[i] = []
 
-    def percentages_code(self, exclude_list) :
-        libs = re.compile('|'.join( "(" + i + ")" for i in exclude_list))
+          for j in v :
+              info[i].append( [j[0], j[1]] )
+      return info
 
-        classes_size = 0
-        classes_db_size = 0
-        classes_edb_size = 0
-        classes_udb_size = 0
-        for _class in self.vm.get_classes() :
-            class_size = 0
-            elems_hash = set()
-            for method in _class.get_methods() :
+  def percentages_code(self, exclude_list) :
+      libs = re.compile('|'.join( "(" + i + ")" for i in exclude_list))
 
-                code = method.get_code()
-                if code == None :
-                    continue
+      classes_size = 0
+      classes_db_size = 0
+      classes_edb_size = 0
+      classes_udb_size = 0
+      for _class in self.vm.get_classes() :
+          class_size = 0
+          elems_hash = set()
+          for method in _class.get_methods() :
 
-                buff_list = self.vmx.get_method_signature( method, predef_sign = DEFAULT_SIGNATURE ).get_list()
+              code = method.get_code()
+              if code == None :
+                  continue
 
-                for i in buff_list :
-                    elem_hash = long(simhash( i ))
-                    elems_hash.add( elem_hash )
+              buff_list = self.vmx.get_method_signature( method, predef_sign = DEFAULT_SIGNATURE ).get_list()
 
-                class_size += method.get_length()
+              for i in buff_list :
+                  elem_hash = long(simhash( i ))
+                  elems_hash.add( elem_hash )
 
-            classes_size += class_size
+              class_size += method.get_length()
 
-            if class_size == 0 :
-                continue
+          classes_size += class_size
 
-            ret = self.db.elems_are_presents( elems_hash )
-            sort_ret = eval_res_per_class( ret )
-            if sort_ret == {} :
-                if libs.search(_class.get_name()) != None :
-                    classes_edb_size += class_size
-                else :
-                  classes_udb_size += class_size
-            else :
-              classes_db_size += class_size
+          if class_size == 0 :
+              continue
 
-        return (classes_db_size/float(classes_size)) * 100, (classes_edb_size/float(classes_size)) * 100, (classes_udb_size/float(classes_size)) * 100
+          ret = self.db.elems_are_presents( elems_hash )
+          sort_ret = eval_res_per_class( ret )
+          if sort_ret == {} :
+              if libs.search(_class.get_name()) != None :
+                  classes_edb_size += class_size
+              else :
+                classes_udb_size += class_size
+          else :
+            classes_db_size += class_size
 
-    def percentages_to_graph(self) :
-        info = { "info" : [], "nodes" : [], "links" : []}
-        N = {}
-        L = {}
+      return (classes_db_size/float(classes_size)) * 100, (classes_edb_size/float(classes_size)) * 100, (classes_udb_size/float(classes_size)) * 100
 
-        for _class in self.vm.get_classes() :
-            elems_hash = set()
-        #    print _class.get_name()
-            for method in _class.get_methods() :
+  def percentages_to_graph(self) :
+      info = { "info" : [], "nodes" : [], "links" : []}
+      N = {}
+      L = {}
 
-                code = method.get_code()
-                if code == None :
-                    continue
+      for _class in self.vm.get_classes() :
+          elems_hash = set()
+      #    print _class.get_name()
+          for method in _class.get_methods() :
 
-                buff_list = self.vmx.get_method_signature( method, predef_sign = DEFAULT_SIGNATURE ).get_list()
+              code = method.get_code()
+              if code == None :
+                  continue
 
-                for i in buff_list :
-                    elem_hash = long(simhash( i ))
-                    elems_hash.add( elem_hash )
+              buff_list = self.vmx.get_method_signature( method, predef_sign = DEFAULT_SIGNATURE ).get_list()
 
-            ret = self.db.elems_are_presents( elems_hash )
-            sort_ret = eval_res_per_class( ret )
-            if sort_ret != {} :
-                if _class.get_name() not in N :
-                    info["nodes"].append( { "name" : _class.get_name().split("/")[-1], "group" : 0 } ) 
-                    N[_class.get_name()] = len(N)
+              for i in buff_list :
+                  elem_hash = long(simhash( i ))
+                  elems_hash.add( elem_hash )
 
-                for j in sort_ret : 
-                    if j not in N : 
-                        N[j] = len(N)
-                        info["nodes"].append( { "name" : j, "group" : 1 } )
+          ret = self.db.elems_are_presents( elems_hash )
+          sort_ret = eval_res_per_class( ret )
+          if sort_ret != {} :
+              if _class.get_name() not in N :
+                  info["nodes"].append( { "name" : _class.get_name().split("/")[-1], "group" : 0 } ) 
+                  N[_class.get_name()] = len(N)
 
-                    key = _class.get_name() + j
-                    if key not in L :
-                        L[ key ] = { "source" : N[_class.get_name()], "target" : N[j], "value" : 0 } 
-                        info["links"].append( L[ key ] )
+              for j in sort_ret : 
+                  if j not in N : 
+                      N[j] = len(N)
+                      info["nodes"].append( { "name" : j, "group" : 1 } )
 
-                    for k in sort_ret[j] :
-                        if sort_ret[j][k] > L[ key ]["value"] :
-                            L[ key ]["value"] = sort_ret[j][k]
+                  key = _class.get_name() + j
+                  if key not in L :
+                      L[ key ] = { "source" : N[_class.get_name()], "target" : N[j], "value" : 0 } 
+                      info["links"].append( L[ key ] )
 
-        return info
+                  for k in sort_ret[j] :
+                      if sort_ret[j][k] > L[ key ]["value"] :
+                          L[ key ]["value"] = sort_ret[j][k]
+
+      return info
+
+
+class ElsimDBIn :
+  def __init__(self, output) :
+    self.db = DBFormat( output )
+
+
+  def add(self, d, dx, name, sname, regexp_pattern, regexp_exclude_pattern) :
+   for _class in d.get_classes() :
+
+    if regexp_pattern != None :
+        if re.match(regexp_pattern, _class.get_name()) == None :
+            continue
+    if regexp_exclude_pattern != None : 
+        if re.match(regexp_exclude_pattern, _class.get_name()) != None :
+            continue
+    
+    print "\t", _class.get_name()
+    for method in _class.get_methods() :
+        code = method.get_code()
+        if code == None :
+            continue
+
+        if method.get_length() < 50 or method.get_name() == "<clinit>" :
+            continue
+
+        buff_list = dx.get_method_signature( method, predef_sign = DEFAULT_SIGNATURE ).get_list()
+        if len(set(buff_list)) == 1 :
+            continue
+
+        for e in buff_list :
+            self.db.add_element( name, sname, _class.get_name(), long(simhash(e)) )
+
+  def save(self) :
+    self.db.save()

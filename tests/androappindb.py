@@ -29,7 +29,7 @@ from optparse import OptionParser
 
 from elsim.elsim_db import *
 from elsim.elsim_dalvik import LIST_EXTERNAL_LIBS
-from elsim.similarity.similarity_db import *
+from elsim.similarity.similarity import *
 
 from androguard.core import androconf
 from androguard.core.bytecodes import apk, dvm
@@ -47,9 +47,8 @@ options = [option_0, option_1, option_2, option_3, option_4]
 
 def check_one_file(d1, dx1) :
   print "Similarities ...."
-  e = ElsimDB( d1, dx1, options.database )
-  print e.percentages_ad()
-  print e.percentages_code(LIST_EXTERNAL_LIBS)
+  e = ElsimDB( options.database )
+  print e.percentages(d1, dx1)
 
 def check_one_directory(directory) :
     for root, dirs, files in os.walk( directory, followlinks=True ) :

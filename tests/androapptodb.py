@@ -33,7 +33,6 @@ from androguard.core import androconf
 from androguard.core.bytecodes import apk, dvm
 from androguard.core.analysis import analysis
 
-DEFAULT_SIGNATURE = analysis.SIGNATURE_SEQUENCE_BB
 option_0 = { 'name' : ('-i', '--input'), 'help' : 'file : use these filenames', 'nargs' : 1 }
 option_1 = { 'name' : ('-o', '--output'), 'help' : 'file : use these filenames', 'nargs' : 1 }
 option_2 = { 'name' : ('-n', '--name'), 'help' : 'file : use these filenames', 'nargs' : 1 }
@@ -46,39 +45,22 @@ options = [option_0, option_1, option_2, option_3, option_4]
 ############################################################
 def main(options, arguments) :
     if options.input != None  and options.output != None and options.name != None and options.subname != None :
+        edi = ElsimDBIn( options.output )
+
         ret_type = androconf.is_android( options.input )
         if ret_type == "APK" :
             a = apk.APK( options.input )
             d1 = dvm.DalvikVMFormat( a.get_dex() )
         elif ret_type == "DEX" :
             d1 = dvm.DalvikVMFormat( open(options.input, "rb").read() )
-        
+
         dx1 = analysis.VMAnalysis( d1 )
 
-        n = SIMILARITY( "elsim/similarity/libsimilarity/libsimilarity.so" )
-        n.set_compress_type( ZLIB_COMPRESS )
+        regexp_pattern = None
+        regexp_exclude_pattern = None
 
-        db = DBFormat( options.output )
-
-        for _class in d1.get_classes() :
-            for method in _class.get_methods() :
-
-                code = method.get_code()
-                if code == None :
-                    continue
-
-                if method.get_length() < 50 or method.get_name() == "<clinit>" :
-                    continue
-
-                buff_list = dx1.get_method_signature( method, predef_sign = DEFAULT_SIGNATURE ).get_list()
-                if len(set(buff_list)) == 1 :
-                    continue
-            
-                print method.get_class_name(), method.get_name(), method.get_descriptor(), method.get_length(), len(buff_list)
-                for i in buff_list :
-                    db.add_element( options.name, options.subname, _class.get_name(), long(n.simhash(i)) )
-
-        db.save()
+        edi.add( d1, dx1, options.name, options.sname, regexp_pattern, regexp_exclude_pattern)
+        edi.save()
 
     elif options.version != None :
         print "Androapptodb version %s" % androconf.ANDROGUARD_VERSION
