@@ -429,6 +429,7 @@ class DBFormat:
             self.D = json.load( fd )
             fd.close()
         except IOError :
+            print "Impossible to open filename: " + filename
             raise("ooo")
 
         self.H = {}
