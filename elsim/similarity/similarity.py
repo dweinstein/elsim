@@ -18,7 +18,7 @@
 
 
 import zlib, bz2
-import math, json
+import math, json, re
 
 def simhash(x) :
     import simhash
@@ -424,41 +424,60 @@ class DBFormat:
        
         self.D = {}
 
+        fd = None
+
         try :
-            fd = open(self.filename, "r")
+            fd = open(self.filename, "r+")
             self.D = json.load( fd )
             fd.close()
         except IOError :
             print "Impossible to open filename: " + filename
-            raise("ooo")
+            self.D = {}
 
         self.H = {}
+        self.N = {}
+
         for i in self.D :
             self.H[i] = {}
             for j in self.D[i] :
+                if j == "NAME" :
+                    self.N[ i ] = re.compile( self.D[i][j] )
+                    continue
+
                 self.H[i][j] = {}
                 for k in self.D[i][j] :
-                    self.H[i][j][k] = set()
-                    for e in self.D[i][j][k] :
-                        self.H[i][j][k].add( e )
+                    if isinstance(self.D[i][j][k], dict) :
+                        self.H[i][j][k] = set()
+                        for e in self.D[i][j][k].keys() :
+                            self.H[i][j][k].add( long(e) )
 
-    def add_element(self, name, sname, sclass, elem):
+    def add_name(self, name, value) :
+        if name not in self.D :
+            self.D[ name ] = {}
+
+        self.D[ name ]["NAME"] = value
+
+    def add_element(self, name, sname, sclass, size, elem):
         try :
             if elem not in self.D[ name ][ sname ][ sclass ] :
-                self.D[ name ][ sname ][ sclass ].append( elem )
+                self.D[ name ][ sname ][ sclass ][ elem ] = size
+                self.D[ name ][ sname ][ "SIZE" ] += size
+
         except KeyError :
             if name not in self.D :
                 self.D[ name ] = {}
                 self.D[ name ][ sname ] = {}
-                self.D[ name ][ sname ][ sclass ] = []
-                self.D[ name ][ sname ][ sclass ].append( elem )
+                self.D[ name ][ sname ][ "SIZE" ] = 0
+                self.D[ name ][ sname ][ sclass ] = {}
             elif sname not in self.D[ name ] :
                 self.D[ name ][ sname ] = {}
-                self.D[ name ][ sname ][ sclass ] = []
-                self.D[ name ][ sname ][ sclass ].append( elem )
+                self.D[ name ][ sname ][ "SIZE" ] = 0
+                self.D[ name ][ sname ][ sclass ] = {}
             elif sclass not in self.D[ name ][ sname ] :
-                self.D[ name ][ sname ][ sclass ] = []
-                self.D[ name ][ sname ][ sclass ].append( elem )
+                self.D[ name ][ sname ][ sclass ] = {}
+
+            self.D[ name ][ sname ][ "SIZE" ] += size
+            self.D[ name ][ sname ][ sclass ][ elem ] = size
 
     def is_present(self, elem) :
         for i in self.D :
@@ -468,21 +487,40 @@ class DBFormat:
 
     def elems_are_presents(self, elems) :
         ret = {}
+        info = {}
 
         for i in self.H:
             ret[i] = {}
+            info[i] = {}
+
             for j in self.H[i] :
                 ret[i][j] = {}
+                info[i][j] = {}
+
                 for k in self.H[i][j] :
-                    val = [self.H[i][j][k].intersection(elems), len(self.H[i][j][k])]
+                    val = [self.H[i][j][k].intersection(elems), len(self.H[i][j][k]), 0, 0]
 
-                    ret[i][j][k] = val
-                    if ((float(len(val[0]))/(val[1])) * 100) >= 50 :
-                        val.append(True)
-                    else:
-                        val.append(False)
+                    size = 0
+                    for z in val[0] :
+                        size += self.D[i][j][k][str(z)]
 
-        return ret
+                    val[2] = (float(len(val[0]))/(val[1])) * 100
+                    val[3] = size
+
+                    if val[3] != 0 :
+                        ret[i][j][k] = val
+
+                info[i][j][ "SIZE" ] = self.D[i][j]["SIZE"]
+
+        return ret, info
+
+    def classes_are_presents(self, classes) :
+        m = set()
+        for j in classes :
+            for i in self.N :
+                if self.N[i].search(j) != None :
+                    m.add( i )
+        return m
 
     def show(self) :
         for i in self.D :

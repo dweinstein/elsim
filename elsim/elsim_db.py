@@ -26,16 +26,6 @@ from androguard.core.analysis import analysis
 
 DEFAULT_SIGNATURE = analysis.SIGNATURE_SEQUENCE_BB
 
-def show_res(ret) :
-    for i in ret :
-        for j in ret[i] :
-            for k in ret[i][j] :
-                val = ret[i][j][k]
-                if len(val[0]) == 1 and val[1] > 1:
-                    continue
-
-                print "\t", i, j, k, len(val[0]), val[1]
-
 def eval_res_per_class(ret) :
     z = {}
 
@@ -58,51 +48,40 @@ def eval_res_per_class(ret) :
                     z[j][k] = val_percentage
     return z
 
-def eval_res(ret) :
-    sorted_elems = {}
-    for i in ret :
-        sorted_elems[i] = []
-        for j in ret[i] :
-            final_value = 0
-            total_value = 0
-            elems = set()
-#            print i, j, final_value
-            for k in ret[i][j] :
-                val = ret[i][j][k]
-                total_value += 1 
-
-                if len(val[0]) == 1 and val[1] > 1:
-                    continue
-
-                ratio = (len(val[0]) / float(val[1]))
-                #print "\t", k, len(val[0]), val[1], ratio
-                if ratio > 0.2 :
-                    if len(val[0]) > 10 or ratio > 0.8 :
-                        final_value += ratio
-                        elems.add( (k, ratio, len(val[0])) )
-
-            if final_value != 0 : 
-                #print "---->", i, j, (final_value/total_value)*100#, elems
-                sorted_elems[i].append( (j, (final_value/total_value)*100, elems) )
-
-        if len(sorted_elems[i]) == 0 :
-            del sorted_elems[i]
-
-    return sorted_elems
-
-def show_sorted_elems(sorted_elems):
-    for i in sorted_elems :
-        print i
-        v = sorted(sorted_elems[i], key=lambda x: x[1])
-        v.reverse()
-        for j in v :
-            print "\t", j[0], j[1]
-
 ############################################################
 
 class ElsimDB :
   def __init__(self, database_path) :
       self.db = DBFormat( database_path )
+
+  def eval_res(self, ret, info, threshold=10.0) :
+      sorted_elems = {}
+
+      for i in ret :
+          sorted_elems[i] = []
+          for j in ret[i] :
+              t_size = 0
+
+              elems = set()
+              for k in ret[i][j] :
+                  val = ret[i][j][k]
+
+                  if len(val[0]) == 1 and val[1] > 1:
+                    continue
+
+                  t_size += val[-1]
+                  elems.add( k )
+
+
+              percentage_size = (t_size / float(info[i][j]["SIZE"])) * 100
+
+              if percentage_size > threshold :
+                sorted_elems[i].append( (j, percentage_size, elems) )
+
+          if len(sorted_elems[i]) == 0 :
+            del sorted_elems[i]
+
+      return sorted_elems
 
   def percentages(self, vm, vmx) :
       elems_hash = set()
@@ -119,8 +98,8 @@ class ElsimDB :
                   elem_hash = long(simhash( i ))
                   elems_hash.add( elem_hash )
 
-      ret = self.db.elems_are_presents( elems_hash )
-      sorted_ret = eval_res(ret)
+      ret, info = self.db.elems_are_presents( elems_hash )
+      sorted_ret = self.eval_res(ret, info)
 
       info = {}
 
@@ -131,7 +110,14 @@ class ElsimDB :
           info[i] = []
 
           for j in v :
-              info[i].append( [j[0], j[1]] )
+             info[i].append( [j[0], j[1]] )
+
+      info_name = self.db.classes_are_presents( vm.get_classes_names() )
+
+      for i in info_name :
+        if i not in info :
+          info[i] = None
+
       return info
 
   def percentages_code(self, exclude_list) :
@@ -141,6 +127,7 @@ class ElsimDB :
       classes_db_size = 0
       classes_edb_size = 0
       classes_udb_size = 0
+
       for _class in self.vm.get_classes() :
           class_size = 0
           elems_hash = set()
@@ -197,6 +184,7 @@ class ElsimDB :
 
           ret = self.db.elems_are_presents( elems_hash )
           sort_ret = eval_res_per_class( ret )
+
           if sort_ret != {} :
               if _class.get_name() not in N :
                   info["nodes"].append( { "name" : _class.get_name().split("/")[-1], "group" : 0 } ) 
@@ -224,6 +212,9 @@ class ElsimDBIn :
     self.db = DBFormat( output )
 
 
+  def add_name(self, name, value) :
+    self.db.add_name( name, value )
+
   def add(self, d, dx, name, sname, regexp_pattern, regexp_exclude_pattern) :
    for _class in d.get_classes() :
 
@@ -240,7 +231,7 @@ class ElsimDBIn :
         if code == None :
             continue
 
-        if method.get_length() < 50 or method.get_name() == "<clinit>" :
+        if method.get_length() < 50 or method.get_name() == "<clinit>" or method.get_name() == "<init>" :
             continue
 
         buff_list = dx.get_method_signature( method, predef_sign = DEFAULT_SIGNATURE ).get_list()
@@ -248,7 +239,7 @@ class ElsimDBIn :
             continue
 
         for e in buff_list :
-            self.db.add_element( name, sname, _class.get_name(), long(simhash(e)) )
+            self.db.add_element( name, sname, _class.get_name(), method.get_length(), long(simhash(e)) )
 
   def save(self) :
     self.db.save()
