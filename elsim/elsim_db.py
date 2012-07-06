@@ -55,6 +55,7 @@ class ElsimDB :
       self.db = DBFormat( database_path )
 
   def eval_res(self, ret, info, threshold=10.0) :
+      print ret
       sorted_elems = {}
 
       for i in ret :
@@ -83,7 +84,7 @@ class ElsimDB :
 
       return sorted_elems
 
-  def percentages(self, vm, vmx) :
+  def percentages(self, vm, vmx, threshold=10) :
       elems_hash = set()
       for _class in vm.get_classes() :
           for method in _class.get_methods() :
@@ -99,7 +100,8 @@ class ElsimDB :
                   elems_hash.add( elem_hash )
 
       ret, info = self.db.elems_are_presents( elems_hash )
-      sorted_ret = self.eval_res(ret, info)
+      sorted_ret = self.eval_res(ret, info, threshold)
+
 
       info = {}
 
