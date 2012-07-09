@@ -55,7 +55,6 @@ class ElsimDB :
       self.db = DBFormat( database_path )
 
   def eval_res(self, ret, info, threshold=10.0) :
-      print ret
       sorted_elems = {}
 
       for i in ret :
