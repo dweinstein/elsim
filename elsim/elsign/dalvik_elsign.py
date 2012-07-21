@@ -21,7 +21,6 @@ import json, base64
 
 from androguard.core.bytecodes import apk
 from androguard.core.bytecodes import dvm
-#from androguard.core.bytecodes.libdvm import dvmfull as dvm
 
 from androguard.core.analysis import analysis
 from androguard.core import androconf
