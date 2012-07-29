@@ -44,7 +44,7 @@ class CheckSumMeth :
         if code != None :
             bc = code.get_bc()
 
-            for i in bc.get() :
+            for i in bc.get_instructions() :
                 self.buff += dvm.clean_name_instruction( i )
                 self.buff += dvm.static_operand_instruction( i )
 
