@@ -133,7 +133,9 @@ class DalvikElsign :
 
         # Add methods for METHSIM
         for method in vm.get_methods() :
-            #s1 = get_signature( vmx, method )
+            if method.get_length() < 15 :
+                continue
+                
             entropies = create_entropies(vmx, method)
             self.meth_elsign.add_element( entropies[0], entropies[1:] )
             del entropies
