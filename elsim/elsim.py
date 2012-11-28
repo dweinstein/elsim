@@ -183,14 +183,17 @@ class Elsim :
 
         self.set_els = {}
         self.ref_set_els = {}
+        self.ref_set_ident = {}
 
     def _init_index_elements(self) :
         self.__init_index_elements( self.e1, 1 )
         self.__init_index_elements( self.e2 )
-    
+
+
     def __init_index_elements(self, ce, init=0) :
         self.set_els[ ce ] = set()
         self.ref_set_els[ ce ] = {}
+        self.ref_set_ident[ce] = {}
         
         for ae in ce.get_elements() :
             e = self.filters[BASE][FILTER_ELEMENT_METH]( ae, ce )
@@ -209,6 +212,10 @@ class Elsim :
             if sha256 not in self.set_els[ ce ] :
                 self.set_els[ ce ].add( sha256 )
                 self.ref_set_els[ ce ][ sha256 ] = e
+                
+                self.ref_set_ident[ce][sha256] = []
+            self.ref_set_ident[ce][sha256].append(e)
+
 
     def _init_similarity(self) :
         intersection_elements = self.set_els[ self.e2 ].intersection( self.set_els[ self.e1 ] ) 
@@ -317,8 +324,12 @@ class Elsim :
         if details :
             if i.getsha256() == None :
                 pass
-            elif i.getsha256() in self.ref_set_els[self.e2] :
-                print "\t\t-->", self.ref_set_els[self.e2][ i.getsha256() ].get_info()
+            elif i.getsha256() in self.ref_set_els[self.e2]:
+                if len(self.ref_set_ident[self.e2][i.getsha256()]) > 1:
+                    for ident in self.ref_set_ident[self.e2][i.getsha256()]:
+                        print "\t\t-->", ident.get_info()
+                else:
+                    print "\t\t-->", self.ref_set_els[self.e2][ i.getsha256() ].get_info()
             else :
                 for j in self.filters[ SIMILARITY_SORT_ELEMENTS ][ i ] :
                     print "\t\t-->", j.get_info(), self.filters[ SIMILARITY_ELEMENTS ][ i ][ j ]

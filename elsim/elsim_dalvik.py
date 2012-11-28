@@ -285,27 +285,6 @@ class Method :
         self.sha256 = hashlib.sha256( fm.get_buff() ).hexdigest()
         self.checksum = fm
 
-    def add_attribute(self, func_meth, func_checksum_bb) :
-        bb = {}
-        bbhash = {}
-
-        fm = func_meth( self.m, self.sim )
-
-        for i in self.mx.basic_blocks.get() :
-            bb[ i.name ] = func_checksum_bb( i )
-
-            try :
-                bbhash[ bb[ i.name ].get_hash() ].append( bb[ i.name ] )
-            except KeyError :
-                bbhash[ bb[ i.name ].get_hash() ] = []
-                bbhash[ bb[ i.name ].get_hash() ].append( bb[ i.name ] )
-
-        self.checksum = fm
-
-        self.bb = bb
-        self.bb_sha256 = bbhash
-        self.sha256 = hashlib.sha256( fm.get_buff() ).hexdigest()
-
     def diff(self, func_sim_bb, func_diff_ins):
         if self.sort_h == [] :
             self.dbb = {}
@@ -730,8 +709,8 @@ def filter_diff_bb(x, y) :
     hS = {}
     rS = {}
 
-    X, map_x = toString( x.bb, hS, rS )
-    Y, map_y = toString( y.bb, hS, rS )
+    X, map_x = toString(x.bb, hS, rS)
+    Y, map_y = toString(y.bb, hS, rS)
 
     debug("%s %d" % (repr(X), len(X)))
     debug("%s %d" % (repr(Y), len(Y)))
@@ -739,7 +718,7 @@ def filter_diff_bb(x, y) :
     m = len(X)
     n = len(Y)
 
-    C = LCS( X, Y )
+    C = LCS(X, Y)
     a = []
     r = []
 
